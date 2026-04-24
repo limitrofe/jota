@@ -1,0 +1,897 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Senadores 2026 — JOTA</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        /* ═══════════════════════════════════════════
+           RESET & BASE
+           ═══════════════════════════════════════════ */
+        *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+
+        :root {
+            /* ── Brand ── */
+            --jota-orange: #F05841;
+            --jota-orange-light: #FFF0ED;
+            --jota-orange-subtle: rgba(240, 88, 65, 0.08);
+
+            /* ── Neutrals ── */
+            --bg: #F5F5F7;
+            --surface: #FFFFFF;
+            --surface-hover: #F9F9FB;
+            --border: #E5E5EA;
+            --border-light: #F0F0F2;
+            --text-primary: #1D1D1F;
+            --text-secondary: #6E6E73;
+            --text-tertiary: #86868B;
+
+                /* ── Status (dot colors only) ── */
+            --dot-continua: #43A047;
+            --dot-senado: #E53935;
+            --dot-governo: #1E88E5;
+            --dot-indefinido: #FB8C00;
+            --dot-nao: #757575;
+            --dot-outros: #8E24AA;
+
+            /* ── Description box ── */
+            --desc-bg: #F2F2F4;
+            --desc-text: #232323;
+
+            /* ── Layout ── */
+            --radius-sm: 8px;
+            --radius-md: 12px;
+            --radius-lg: 16px;
+            --radius-xl: 20px;
+            --shadow-sm: 0 1px 3px rgba(0,0,0,0.04), 0 1px 2px rgba(0,0,0,0.03);
+            --shadow-md: 0 4px 12px rgba(0,0,0,0.05), 0 1px 3px rgba(0,0,0,0.04);
+            --shadow-lg: 0 8px 30px rgba(0,0,0,0.06), 0 2px 8px rgba(0,0,0,0.04);
+            --shadow-xl: 0 20px 60px rgba(0,0,0,0.08), 0 4px 16px rgba(0,0,0,0.04);
+            --transition: all 0.25s cubic-bezier(0.25, 0.1, 0.25, 1);
+            --transition-spring: all 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+        }
+
+        html { -webkit-font-smoothing: antialiased; -moz-osx-font-smoothing: grayscale; }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'Helvetica Neue', sans-serif;
+            background: var(--bg);
+            color: var(--text-primary);
+            font-size: 14px;
+            line-height: 1.5;
+            min-height: 100vh;
+        }
+
+        /* ═══════════════════════════════════════════
+           ROOT CONTAINER
+           ═══════════════════════════════════════════ */
+        #jota-gallery-root {
+            max-width: 1240px;
+            margin: 0 auto;
+            padding: 24px 20px 40px;
+        }
+
+        /* ═══════════════════════════════════════════
+           HEADER
+           ═══════════════════════════════════════════ */
+        .jota-header {
+            background: rgba(255,255,255,0.80);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border: 1px solid rgba(255,255,255,0.6);
+            border-bottom: 1px solid var(--border);
+            padding: 16px 20px 18px;
+            border-radius: var(--radius-lg);
+            box-shadow: var(--shadow-sm);
+            position: sticky;
+            top: 16px;
+            z-index: 100;
+            margin-bottom: 20px;
+            transition: transform 0.35s cubic-bezier(0.25, 0.1, 0.25, 1), box-shadow 0.25s ease, border-color 0.25s ease;
+        }
+
+        .jota-header.scrolled {
+            box-shadow: var(--shadow-md);
+            border-color: var(--border);
+        }
+
+        .jota-header.hidden {
+            transform: translateY(-120%);
+        }
+
+        @media (min-width: 768px) {
+            .jota-header.hidden {
+                transform: none;
+            }
+        }
+
+        .jota-title {
+            font-size: 1.5rem;
+            font-weight: 800;
+            letter-spacing: -0.025em;
+            margin: 0 0 14px 0;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .jota-title-accent {
+            display: inline-block;
+            width: 5px;
+            height: 28px;
+            background: var(--jota-orange);
+            border-radius: 3px;
+        }
+
+        .jota-title-year {
+            font-weight: 600;
+            color: var(--jota-orange);
+        }
+
+        .jota-filters {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        @media (min-width: 640px) {
+            .jota-filters {
+                flex-direction: row;
+                gap: 12px;
+                align-items: center;
+            }
+        }
+
+        .jota-search-wrapper {
+            position: relative;
+            flex: 1;
+            min-width: 0;
+        }
+
+        .jota-search-icon {
+            position: absolute;
+            left: 16px;
+            top: 50%;
+            transform: translateY(-50%);
+            font-size: 1rem;
+            color: var(--text-tertiary);
+            pointer-events: none;
+            transition: var(--transition);
+        }
+
+        #jota-search {
+            width: 100%;
+            padding: 13px 16px 13px 44px;
+            border: 1.5px solid var(--border);
+            border-radius: var(--radius-md);
+            font-size: 1rem;
+            font-family: inherit;
+            background: var(--surface);
+            color: var(--text-primary);
+            transition: var(--transition);
+            outline: none;
+        }
+
+        #jota-search::placeholder { color: var(--text-tertiary); }
+        #jota-search:focus {
+            border-color: var(--jota-orange);
+            box-shadow: 0 0 0 3px var(--jota-orange-subtle);
+        }
+        #jota-search:focus + .jota-search-icon { color: var(--jota-orange); }
+
+        .jota-select-wrapper {
+            position: relative;
+            min-width: 0;
+        }
+
+        @media (min-width: 640px) {
+            .jota-select-wrapper {
+                flex: 0 0 200px;
+            }
+        }
+
+        .jota-select-wrapper select {
+            width: 100%;
+            padding: 13px 40px 13px 16px;
+            border: 1.5px solid var(--border);
+            border-radius: var(--radius-md);
+            font-size: 0.95rem;
+            font-family: inherit;
+            font-weight: 500;
+            background: var(--surface);
+            color: var(--text-primary);
+            appearance: none;
+            -webkit-appearance: none;
+            cursor: pointer;
+            transition: var(--transition);
+            outline: none;
+        }
+
+        .jota-select-wrapper select:focus {
+            border-color: var(--jota-orange);
+            box-shadow: 0 0 0 3px var(--jota-orange-subtle);
+        }
+
+        .jota-select-wrapper::after {
+            content: '▾';
+            position: absolute;
+            right: 16px;
+            top: 50%;
+            transform: translateY(-50%);
+            font-size: 0.8rem;
+            color: var(--text-tertiary);
+            pointer-events: none;
+        }
+
+        /* ═══════════════════════════════════════════
+           LEGEND
+           ═══════════════════════════════════════════ */
+        .jota-legend {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 6px 16px;
+            margin-bottom: 16px;
+            padding: 12px 16px;
+            background: var(--surface);
+            border: 1px solid var(--border-light);
+            border-radius: var(--radius-md);
+            box-shadow: var(--shadow-sm);
+            font-size: 0.78rem;
+        }
+
+        .jota-legend-item {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            white-space: nowrap;
+            color: var(--text-secondary);
+            font-weight: 500;
+        }
+
+        .jota-legend-dot {
+            display: inline-block;
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            flex-shrink: 0;
+        }
+
+        /* ═══════════════════════════════════════════
+           DESKTOP LAYOUT — Kanban-style columns
+           ═══════════════════════════════════════════ */
+        .jota-desktop-layout { display: none; }
+        .jota-mobile-layout  { display: block; }
+
+        @media (min-width: 768px) {
+            .jota-desktop-layout {
+                display: grid;
+                grid-template-columns: 1fr 1fr;
+                gap: 20px;
+            }
+            .jota-mobile-layout { display: none; }
+            #jota-gallery-root { padding: 28px 32px 48px; }
+            .jota-title { font-size: 1.75rem; }
+            .jota-filters { flex-direction: row; gap: 12px; align-items: center; }
+            .jota-search-wrapper { flex: 0 1 280px; }
+            .jota-select-wrapper { flex: 0 0 220px; }
+            .jota-select-wrapper select { width: 100%; font-size: 0.9rem; padding: 10px 32px 10px 14px; }
+            #jota-search { font-size: 1rem; padding: 11px 16px 11px 42px; }
+        }
+
+        .jota-col {
+            background: transparent;
+            border-radius: var(--radius-lg);
+            overflow: visible;
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+        }
+
+        .jota-col-header {
+            font-size: 0.75rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.08em;
+            padding: 12px 16px 4px;
+            color: var(--text-secondary);
+        }
+
+        .jota-col-header span {
+            font-weight: 600;
+        }
+
+        .jota-col-subheader {
+            font-size: 0.7rem;
+            color: var(--text-tertiary);
+            padding: 0 16px 10px;
+            font-weight: 400;
+            border-bottom: 1px solid var(--border-light);
+            margin-bottom: 2px;
+        }
+
+        /* ═══════════════════════════════════════════
+           CARDS
+           ═══════════════════════════════════════════ */
+        .jota-card {
+            background: var(--surface);
+            padding: 12px 14px 10px;
+            border-radius: var(--radius-md);
+            border: 1px solid var(--border-light);
+            box-shadow: var(--shadow-sm);
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+            transition: var(--transition-spring);
+            cursor: default;
+            position: relative;
+        }
+
+        .jota-card:hover {
+            border-color: var(--border);
+            box-shadow: var(--shadow-md);
+            transform: translateY(-1px);
+            background: var(--surface-hover);
+        }
+
+        .jota-card-top {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .jota-photo-wrapper {
+            position: relative;
+            flex-shrink: 0;
+        }
+
+        .jota-photo {
+            width: 36px;
+            height: 36px;
+            object-fit: cover;
+            border-radius: 50%;
+            background: #F0F0F0;
+            display: block;
+            border: 2px solid var(--surface);
+            box-shadow: 0 1px 4px rgba(0,0,0,0.08);
+        }
+
+        .jota-meta {
+            display: flex;
+            align-items: baseline;
+            gap: 6px;
+            flex-grow: 1;
+            min-width: 0;
+            flex-wrap: nowrap;
+            overflow: hidden;
+        }
+
+        .jota-name {
+            font-size: 0.92rem;
+            font-weight: 700;
+            white-space: nowrap;
+            color: var(--text-primary);
+            letter-spacing: -0.01em;
+        }
+
+        .jota-party {
+            font-size: 0.72rem;
+            color: var(--text-secondary);
+            white-space: nowrap;
+            font-weight: 500;
+        }
+
+        .jota-uf {
+            font-size: 0.72rem;
+            font-weight: 700;
+            color: var(--text-primary);
+            white-space: nowrap;
+            background: var(--bg);
+            padding: 1px 6px;
+            border-radius: 4px;
+        }
+
+        .jota-mandate {
+            font-size: 0.72rem;
+            color: var(--text-tertiary);
+            white-space: nowrap;
+            margin-left: auto;
+            flex-shrink: 0;
+            font-weight: 500;
+            background: var(--bg);
+            padding: 1px 8px;
+            border-radius: 4px;
+        }
+
+        .jota-candidatura {
+            font-size: 0.7rem;
+            padding: 6px 10px;
+            border-radius: 6px;
+            font-weight: 300;
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'Helvetica Neue', sans-serif;
+            line-height: 1.5;
+            align-self: stretch;
+            max-width: 100%;
+            color: var(--desc-text);
+            background: var(--desc-bg);
+            display: flex;
+            align-items: flex-start;
+            gap: 8px;
+            letter-spacing: -0.01em;
+        }
+
+        .jota-candidatura::before {
+            content: '';
+            display: inline-block;
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            flex-shrink: 0;
+            margin-top: 6px;
+        }
+
+        .status-continua::before   { background: var(--dot-continua); }
+        .status-senado::before     { background: var(--dot-senado); }
+        .status-governo::before    { background: var(--dot-governo); }
+        .status-indefinido::before { background: var(--dot-indefinido); }
+        .status-nao::before        { background: var(--dot-nao); }
+        .status-outros::before     { background: var(--dot-outros); }
+
+        @media (min-width: 768px) {
+            .jota-card { padding: 14px 16px 12px; gap: 8px; }
+            .jota-card-top { gap: 12px; }
+            .jota-photo { width: 42px; height: 42px; }
+            .jota-name    { font-size: 1rem; }
+            .jota-party   { font-size: 0.78rem; }
+            .jota-uf      { font-size: 0.78rem; }
+            .jota-mandate { font-size: 0.78rem; }
+            .jota-candidatura { font-size: 0.78rem; padding: 4px 12px; }
+        }
+
+        /* ═══════════════════════════════════════════
+           MOBILE TABLE
+           ═══════════════════════════════════════════ */
+        .jota-table {
+            width: 100%;
+            border-collapse: separate;
+            border-spacing: 0;
+            background: var(--surface);
+            border-radius: var(--radius-lg);
+            overflow: hidden;
+            font-size: 0.82rem;
+            box-shadow: var(--shadow-sm);
+            border: 1px solid var(--border-light);
+        }
+
+        .jota-table tbody tr { border-bottom: none; }
+        .jota-table tbody tr:hover { background: var(--surface-hover); }
+
+        .jota-table tbody .tr-main td {
+            padding: 8px 10px 2px;
+            vertical-align: middle;
+            border-bottom: none;
+        }
+
+        .jota-table tbody .tr-status td {
+            padding: 2px 10px 8px;
+            border-bottom: 1px solid var(--border-light);
+        }
+
+        .jota-table tbody .tr-status:hover { background: var(--surface-hover); }
+
+        .jota-table .td-foto img {
+            width: 34px; height: 34px;
+            object-fit: cover; border-radius: 50%; display: block;
+            border: 2px solid var(--surface);
+            box-shadow: 0 1px 4px rgba(0,0,0,0.08);
+        }
+
+        .jota-table .td-nome strong {
+            display: block;
+            font-size: 0.85rem;
+            font-weight: 700;
+            color: var(--text-primary);
+        }
+
+        .jota-table .td-nome span {
+            font-size: 0.7rem;
+            color: var(--text-secondary);
+            font-weight: 500;
+        }
+
+        .jota-table .td-uf {
+            font-weight: 700;
+            font-size: 0.82rem;
+            color: var(--text-primary);
+        }
+
+        .jota-table .td-fim {
+            color: var(--text-tertiary);
+            font-size: 0.78rem;
+            white-space: nowrap;
+            font-weight: 500;
+        }
+
+        .jota-table .jota-candidatura { display: inline-block; }
+
+        .jota-table .tr-section td {
+            padding: 8px 12px;
+            font-size: 0.7rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.06em;
+            background: var(--bg);
+            color: var(--text-secondary);
+        }
+
+        /* ═══════════════════════════════════════════
+           FOOTER
+           ═══════════════════════════════════════════ */
+        .jota-footer {
+            padding: 16px 0 0;
+            text-align: center;
+            font-size: 0.78rem;
+            color: var(--text-tertiary);
+            font-weight: 500;
+            border-top: 1px solid var(--border-light);
+            margin-top: 20px;
+        }
+
+        .jota-footer strong {
+            color: var(--text-primary);
+            font-weight: 700;
+        }
+
+        .jota-empty {
+            text-align: center;
+            padding: 40px 20px;
+            color: var(--text-tertiary);
+            background: var(--surface);
+            border: 1px solid var(--border-light);
+            border-radius: var(--radius-lg);
+            font-weight: 500;
+        }
+
+        /* ═══════════════════════════════════════════
+           ANIMATIONS
+           ═══════════════════════════════════════════ */
+        @keyframes fadeSlideUp {
+            from { opacity: 0; transform: translateY(8px); }
+            to   { opacity: 1; transform: translateY(0); }
+        }
+
+        .jota-card {
+            animation: fadeSlideUp 0.35s ease both;
+        }
+
+        .jota-card:nth-child(2)  { animation-delay: 0.02s; }
+        .jota-card:nth-child(3)  { animation-delay: 0.04s; }
+        .jota-card:nth-child(4)  { animation-delay: 0.06s; }
+        .jota-card:nth-child(5)  { animation-delay: 0.08s; }
+        .jota-card:nth-child(6)  { animation-delay: 0.10s; }
+        .jota-card:nth-child(7)  { animation-delay: 0.12s; }
+        .jota-card:nth-child(8)  { animation-delay: 0.14s; }
+        .jota-card:nth-child(9)  { animation-delay: 0.16s; }
+        .jota-card:nth-child(10) { animation-delay: 0.18s; }
+        .jota-card:nth-child(11) { animation-delay: 0.20s; }
+        .jota-card:nth-child(12) { animation-delay: 0.22s; }
+        .jota-card:nth-child(13) { animation-delay: 0.24s; }
+        .jota-card:nth-child(14) { animation-delay: 0.26s; }
+        .jota-card:nth-child(15) { animation-delay: 0.28s; }
+        .jota-card:nth-child(16) { animation-delay: 0.30s; }
+        .jota-card:nth-child(17) { animation-delay: 0.32s; }
+        .jota-card:nth-child(18) { animation-delay: 0.34s; }
+        .jota-card:nth-child(19) { animation-delay: 0.36s; }
+        .jota-card:nth-child(20) { animation-delay: 0.38s; }
+        .jota-card:nth-child(21) { animation-delay: 0.40s; }
+        .jota-card:nth-child(22) { animation-delay: 0.42s; }
+        .jota-card:nth-child(23) { animation-delay: 0.44s; }
+        .jota-card:nth-child(24) { animation-delay: 0.46s; }
+        .jota-card:nth-child(25) { animation-delay: 0.48s; }
+        .jota-card:nth-child(26) { animation-delay: 0.50s; }
+        .jota-card:nth-child(27) { animation-delay: 0.52s; }
+        .jota-card:nth-child(28) { animation-delay: 0.54s; }
+        .jota-card:nth-child(29) { animation-delay: 0.56s; }
+        .jota-card:nth-child(30) { animation-delay: 0.58s; }
+        .jota-card:nth-child(31) { animation-delay: 0.60s; }
+        .jota-card:nth-child(32) { animation-delay: 0.62s; }
+        .jota-card:nth-child(33) { animation-delay: 0.64s; }
+        .jota-card:nth-child(34) { animation-delay: 0.66s; }
+        .jota-card:nth-child(35) { animation-delay: 0.68s; }
+        .jota-card:nth-child(36) { animation-delay: 0.70s; }
+        .jota-card:nth-child(37) { animation-delay: 0.72s; }
+        .jota-card:nth-child(38) { animation-delay: 0.74s; }
+        .jota-card:nth-child(39) { animation-delay: 0.76s; }
+        .jota-card:nth-child(40) { animation-delay: 0.78s; }
+
+        /* ═══════════════════════════════════════════
+           SCROLLBAR
+           ═══════════════════════════════════════════ */
+        ::-webkit-scrollbar { width: 6px; }
+        ::-webkit-scrollbar-track { background: transparent; }
+        ::-webkit-scrollbar-thumb { background: #C7C7CC; border-radius: 3px; }
+        ::-webkit-scrollbar-thumb:hover { background: #A8A8AD; }
+    </style>
+</head>
+<body>
+    <div id="jota-gallery-root" role="main">
+        <!-- HEADER -->
+        <header class="jota-header" id="jota-header">
+            <h1 class="jota-title">
+                <span class="jota-title-accent"></span>
+                Senadores <span class="jota-title-year">2026</span>
+            </h1>
+            <div class="jota-filters">
+                <div class="jota-search-wrapper">
+                    <span class="jota-search-icon" aria-hidden="true">🔍</span>
+                    <input type="text" id="jota-search" placeholder="Buscar senador..." aria-label="Buscar senador por nome">
+                </div>
+                <div class="jota-select-wrapper">
+                    <select id="jota-filter-partido" aria-label="Filtrar por partido">
+                        <option value="">Todos os partidos</option>
+                    </select>
+                </div>
+            </div>
+        </header>
+
+        <!-- LEGEND -->
+        <div class="jota-legend" aria-label="Legenda das cores de status">
+            <span class="jota-legend-item"><span class="jota-legend-dot" style="background:var(--dot-continua)"></span> Continua no mandato</span>
+            <span class="jota-legend-item"><span class="jota-legend-dot" style="background:var(--dot-senado)"></span> Candidatura ao Senado</span>
+            <span class="jota-legend-item"><span class="jota-legend-dot" style="background:var(--dot-governo)"></span> Candidatura a Governo</span>
+            <span class="jota-legend-item"><span class="jota-legend-dot" style="background:var(--dot-indefinido)"></span> Indefinido</span>
+            <span class="jota-legend-item"><span class="jota-legend-dot" style="background:var(--dot-nao)"></span> Não será candidato</span>
+            <span class="jota-legend-item"><span class="jota-legend-dot" style="background:var(--dot-outros)"></span> Outros</span>
+        </div>
+
+        <!-- DESKTOP COLUMNS -->
+        <div class="jota-desktop-layout" id="jota-desktop"></div>
+
+        <!-- MOBILE TABLE -->
+        <div class="jota-mobile-layout" id="jota-mobile"></div>
+
+        <!-- FOOTER -->
+        <footer class="jota-footer">
+            <strong id="jota-count">0</strong> senadores
+        </footer>
+    </div>
+
+    <script>
+    const senadoresData = [
+        {Nome:"Alan Rick",Partido:"REPUBLICANOS",UF:"AC",Periodo:"2023 - 2031",Candidatura:"Candidatura ao governo do Acre",Foto:"alan_rick-ac.jpeg"},
+        {Nome:"Marcio Bittar",Partido:"PL",UF:"AC",Periodo:"2019 - 2027",Candidatura:"Candidatura ao Senado",Foto:"marcio_bittar-ac.jpeg"},
+        {Nome:"Sérgio Petecão",Partido:"PSD",UF:"AC",Periodo:"2019 - 2027",Candidatura:"Candidatura ao governo do Acre",Foto:"sergio_petecao-ac.jpeg"},
+        {Nome:"Dra. Eudócia",Partido:"PSDB",UF:"AL",Periodo:"2019 - 2027",Candidatura:"Sem definição",Foto:"dra_eudocia-al.jpeg"},
+        {Nome:"Renan Filho",Partido:"MDB",UF:"AL",Periodo:"2023 - 2031",Candidatura:"Candidatura ao governo de Alagoas",Foto:"renan_filho-al.jpeg"},
+        {Nome:"Renan Calheiros",Partido:"MDB",UF:"AL",Periodo:"2019 - 2027",Candidatura:"Candidatura ao Senado",Foto:"renan_calheiros-al.jpeg"},
+        {Nome:"Eduardo Braga",Partido:"MDB",UF:"AM",Periodo:"2019 - 2027",Candidatura:"Candidatura ao Senado",Foto:"eduardo_braga-am.jpeg"},
+        {Nome:"Omar Aziz",Partido:"PSD",UF:"AM",Periodo:"2023 - 2031",Candidatura:"Candidatura ao governo do Amazonas",Foto:"omar_aziz-am.jpeg"},
+        {Nome:"Plínio Valério",Partido:"PSDB",UF:"AM",Periodo:"2019 - 2027",Candidatura:"Candidatura ao Senado",Foto:"plinio_valerio-am.jpeg"},
+        {Nome:"Davi Alcolumbre",Partido:"UNIÃO",UF:"AP",Periodo:"2023 - 2031",Candidatura:"Continua no mandato",Foto:"davi_alcolumbre-ap.jpeg"},
+        {Nome:"Lucas Barreto",Partido:"PSD",UF:"AP",Periodo:"2019 - 2027",Candidatura:"Candidatura ao Senado",Foto:"lucas_barreto-ap.jpeg"},
+        {Nome:"Randolfe Rodrigues",Partido:"PT",UF:"AP",Periodo:"2019 - 2027",Candidatura:"Candidatura ao Senado",Foto:"randolfe_rodrigues-ap.jpeg"},
+        {Nome:"Angelo Coronel",Partido:"REPUBLICANOS",UF:"BA",Periodo:"2019 - 2027",Candidatura:"Candidatura ao Senado",Foto:"angelo_coronel-ba.jpeg"},
+        {Nome:"Jaques Wagner",Partido:"PT",UF:"BA",Periodo:"2019 - 2027",Candidatura:"Candidatura ao Senado",Foto:"jaques_wagner-ba.jpeg"},
+        {Nome:"Otto Alencar",Partido:"PSD",UF:"BA",Periodo:"2023 - 2031",Candidatura:"Continua no mandato",Foto:"otto_alencar-ba.jpeg"},
+        {Nome:"Camilo Santana",Partido:"PT",UF:"CE",Periodo:"2023 - 2031",Candidatura:"Possibilidade de candidatura, mas sem cargo definido",Foto:"camilo_santana-ce.jpeg"},
+        {Nome:"Cid Gomes",Partido:"PSB",UF:"CE",Periodo:"2019 - 2027",Candidatura:"Possibilidade de candidatura, mas sem cargo definido ou se irá disputar as eleições",Foto:"cig_gomes-ce.jpeg"},
+        {Nome:"Eduardo Girão",Partido:"NOVO",UF:"CE",Periodo:"2019 - 2027",Candidatura:"Candidatura ao governo do Ceará",Foto:"eduardo_girao-ce.jpeg"},
+        {Nome:"Damares Alves",Partido:"REPUBLICANOS",UF:"DF",Periodo:"2023 - 2031",Candidatura:"Continua no mandato",Foto:"damares_alves-df.jpeg"},
+        {Nome:"Izalci Lucas",Partido:"PL",UF:"DF",Periodo:"2019 - 2027",Candidatura:"Candidatura ao governo do Distrito Federal",Foto:"izalci_lucas-df.jpeg"},
+        {Nome:"Leila Barros",Partido:"PDT",UF:"DF",Periodo:"2019 - 2027",Candidatura:"Candidatura ao Senado",Foto:"leila_barros-df.jpeg"},
+        {Nome:"Fabiano Contarato",Partido:"PT",UF:"ES",Periodo:"2019 - 2027",Candidatura:"Candidatura ao Senado",Foto:"fabiano_contarato-es.jpeg"},
+        {Nome:"Magno Malta",Partido:"PL",UF:"ES",Periodo:"2023 - 2031",Candidatura:"Há interesse para disputar o governo do Espírito Santo, mas não está nada definido",Foto:"magno_malta-es.jpeg"},
+        {Nome:"Marcos do Val",Partido:"AVANTE",UF:"ES",Periodo:"2019 - 2027",Candidatura:"Articula reeleição ao Senado",Foto:"marcos_do_val-es.jpeg"},
+        {Nome:"Jorge Kajuru",Partido:"PSB",UF:"GO",Periodo:"2019 - 2027",Candidatura:"Não será candidato",Foto:"jorge_kajuru-go.jpeg"},
+        {Nome:"Vanderlan Cardoso",Partido:"PSD",UF:"GO",Periodo:"2019 - 2027",Candidatura:"Candidatura ao Senado",Foto:"vanderlan_cardoso-go.jpeg"},
+        {Nome:"Wilder Morais",Partido:"PL",UF:"GO",Periodo:"2023 - 2031",Candidatura:"Candidatura ao governo de Goiás",Foto:"wilder_morais-go.jpeg"},
+        {Nome:"Ana Paula Lobato",Partido:"PSB",UF:"MA",Periodo:"2023 - 2031",Candidatura:"Continua no mandato",Foto:"ana_paula_lobato-ma.jpeg"},
+        {Nome:"Eliziane Gama",Partido:"PT",UF:"MA",Periodo:"2019 - 2027",Candidatura:"Candidatura ao Senado",Foto:"eliziane_gama-ma.jpeg"},
+        {Nome:"Weverton",Partido:"PDT",UF:"MA",Periodo:"2019 - 2027",Candidatura:"Candidatura ao Senado",Foto:"weverton-ma.jpeg"},
+        {Nome:"Carlos Viana",Partido:"PSD",UF:"MG",Periodo:"2019 - 2027",Candidatura:"Candidatura ao Senado",Foto:"carlos_viana-mg.jpeg"},
+        {Nome:"Cleitinho",Partido:"REPUBLICANOS",UF:"MG",Periodo:"2023 - 2031",Candidatura:"Candidatura ao governo de Minas Gerais",Foto:"cleitinho-mg.jpeg"},
+        {Nome:"Rodrigo Pacheco",Partido:"PSB",UF:"MG",Periodo:"2019 - 2027",Candidatura:"Sondado por Lula ao governo de Minas Gerais, mas o martelo ainda não foi batido",Foto:"rodrigo_pacheco-mg.jpeg"},
+        {Nome:"Nelsinho Trad",Partido:"PSD",UF:"MS",Periodo:"2019 - 2027",Candidatura:"Candidatura ao Senado",Foto:"nelsinho_trad-ms.jpeg"},
+        {Nome:"Soraya Thronicke",Partido:"PSB",UF:"MS",Periodo:"2019 - 2027",Candidatura:"Candidatura ao Senado",Foto:"soraya_thronicke-ms.jpeg"},
+        {Nome:"Tereza Cristina",Partido:"PP",UF:"MS",Periodo:"2023 - 2031",Candidatura:"Continua no mandato",Foto:"tereza_cristina-ms.jpeg"},
+        {Nome:"Jayme Campos",Partido:"UNIÃO",UF:"MT",Periodo:"2019 - 2027",Candidatura:"Candidatura ao governo de Mato Grosso",Foto:"jayme_campos-mt.jpeg"},
+        {Nome:"Carlos Fávaro",Partido:"PSD",UF:"MT",Periodo:"2019 - 2027",Candidatura:"Candidatura ao Senado",Foto:"carlos_favaro-mt.jpeg"},
+        {Nome:"Wellington Fagundes",Partido:"PL",UF:"MT",Periodo:"2023 - 2031",Candidatura:"Candidatura ao governo de Mato Grosso",Foto:"wellington_fagundes-mt.jpeg"},
+        {Nome:"Beto Faro",Partido:"PT",UF:"PA",Periodo:"2023 - 2031",Candidatura:"Continua no mandato",Foto:"beto_faro-pa.jpeg"},
+        {Nome:"Jader Barbalho",Partido:"MDB",UF:"PA",Periodo:"2019 - 2027",Candidatura:"Não será candidato",Foto:"jader_barbalho-pa.jpeg"},
+        {Nome:"Zequinha Marinho",Partido:"PODEMOS",UF:"PA",Periodo:"2019 - 2027",Candidatura:"Candidatura ao Senado",Foto:"zequinha_marinho-pa.jpeg"},
+        {Nome:"Daniella Ribeiro",Partido:"PP",UF:"PB",Periodo:"2019 - 2027",Candidatura:"Não será candidata. No lugar dela, o governador João Azevedo será o candidato e o filho da senadora, Lucas Ribeiro, será candidato ao governo do estado. O pai do presidente da Câmara, Hugo Motta, Nabor Wanderley, também será candidato ao Senado",Foto:"daniella_ribeiro-pb.jpeg"},
+        {Nome:"Efraim Filho",Partido:"PL",UF:"PB",Periodo:"2023 - 2031",Candidatura:"Candidatura ao governo da Paraíba",Foto:"efraim_filho-pb.jpeg"},
+        {Nome:"Veneziano Vital do Rêgo",Partido:"MDB",UF:"PB",Periodo:"2019 - 2027",Candidatura:"Candidatura ao Senado",Foto:"veneziano_vital_do_rego-pb.jpeg"},
+        {Nome:"Fernando Dueire",Partido:"PSD",UF:"PE",Periodo:"2019 - 2027",Candidatura:"Candidatura ao Senado",Foto:"fernando-dueire-pe.jpeg"},
+        {Nome:"Humberto Costa",Partido:"PT",UF:"PE",Periodo:"2019 - 2027",Candidatura:"Candidatura ao Senado",Foto:"humberto_costa-pe.jpeg"},
+        {Nome:"Teresa Leitão",Partido:"PT",UF:"PE",Periodo:"2023 - 2031",Candidatura:"Continua no mandato",Foto:"teresa_leitao-pe.jpeg"},
+        {Nome:"Ciro Nogueira",Partido:"PP",UF:"PI",Periodo:"2019 - 2027",Candidatura:"Candidatura ao Senado",Foto:"ciro_nogueira-pi.jpeg"},
+        {Nome:"Jussara Lima",Partido:"PSD",UF:"PI",Periodo:"2023 - 2031",Candidatura:"Continua no mandato",Foto:"jussara_lima-pi.jpeg"},
+        {Nome:"Marcelo Castro",Partido:"MDB",UF:"PI",Periodo:"2019 - 2027",Candidatura:"Candidatura ao Senado",Foto:"marcelo_castro-pi.jpeg"},
+        {Nome:"Flávio Arns",Partido:"PSB",UF:"PR",Periodo:"2019 - 2027",Candidatura:"Ainda sem definição",Foto:"flavio_arns-pr.jpeg"},
+        {Nome:"Oriovisto Guimarães",Partido:"PSDB",UF:"PR",Periodo:"2019 - 2027",Candidatura:"Não será candidato",Foto:"oriovisto_guimaraes-pr.jpeg"},
+        {Nome:"Sergio Moro",Partido:"PL",UF:"PR",Periodo:"2023 - 2031",Candidatura:"Candidatura ao governo do Paraná",Foto:"sergio_moro-pr.jpeg"},
+        {Nome:"Romário",Partido:"PL",UF:"RJ",Periodo:"2023 - 2031",Candidatura:"Continua no mandato",Foto:"romario-rj.jpeg"},
+        {Nome:"Carlos Portinho",Partido:"PL",UF:"RJ",Periodo:"2019 - 2027",Candidatura:"Candidatura a deputado federal",Foto:"carlos_portinho-rj.jpeg"},
+        {Nome:"Flávio Bolsonaro",Partido:"PL",UF:"RJ",Periodo:"2019 - 2027",Candidatura:"Candidatura ao Planalto",Foto:"flavio_bolsonaro-rj.jpeg"},
+        {Nome:"Rogerio Marinho",Partido:"PL",UF:"RN",Periodo:"2023 - 2031",Candidatura:"Ficará responsável por organizar a campanha de Flávio Bolsonaro",Foto:"rogerio_marinho-rn.jpeg"},
+        {Nome:"Styvenson Valentim",Partido:"PODEMOS",UF:"RN",Periodo:"2019 - 2027",Candidatura:"Candidatura ao Senado",Foto:"styvenson_valentim-rn.jpeg"},
+        {Nome:"Zenaide Maia",Partido:"PSD",UF:"RN",Periodo:"2019 - 2027",Candidatura:"Candidatura ao Senado",Foto:"zenaide_maia-rn.jpeg"},
+        {Nome:"Confúcio Moura",Partido:"MDB",UF:"RO",Periodo:"2019 - 2027",Candidatura:"Possível candidatura ao Senado, mas o martelo ainda não foi batido",Foto:"confucio_moura-ro.jpeg"},
+        {Nome:"Jaime Bagattoli",Partido:"PL",UF:"RO",Periodo:"2023 - 2031",Candidatura:"Continua no mandato",Foto:"jaime_bagattoli-ro.jpeg"},
+        {Nome:"Marcos Rogério",Partido:"PL",UF:"RO",Periodo:"2019 - 2027",Candidatura:"Candidatura ao governo de Rondônia",Foto:"marcos_rogerio-ro.jpeg"},
+        {Nome:"Chico Rodrigues",Partido:"PSB",UF:"RR",Periodo:"2019 - 2027",Candidatura:"Candidatura ao Senado",Foto:"chico_rodrigues-rr.jpeg"},
+        {Nome:"Dr. Hiran",Partido:"PP",UF:"RR",Periodo:"2023 - 2031",Candidatura:"Continua no mandato",Foto:"dr_hiran-rr.jpeg"},
+        {Nome:"Roberta Acioly",Partido:"REPUBLICANOS",UF:"RR",Periodo:"2019 - 2027",Candidatura:"Candidatura à Câmara dos Deputados",Foto:"roberta_acioly-rr.jpeg"},
+        {Nome:"Hamilton Mourão",Partido:"REPUBLICANOS",UF:"RS",Periodo:"2023 - 2031",Candidatura:"Continua no mandato",Foto:"hamilton_mourao-rs.jpeg"},
+        {Nome:"Luis Carlos Heinze",Partido:"PP",UF:"RS",Periodo:"2019 - 2027",Candidatura:"Não será candidato",Foto:"luis_carlos_heinze-rs.jpeg"},
+        {Nome:"Paulo Paim",Partido:"PT",UF:"RS",Periodo:"2019 - 2027",Candidatura:"Não será candidato",Foto:"paulo_paim-rs.jpeg"},
+        {Nome:"Esperidião Amin",Partido:"PP",UF:"SC",Periodo:"2019 - 2027",Candidatura:"Candidatura ao Senado",Foto:"esperidiao_amin-sc.jpeg"},
+        {Nome:"Ivete da Silveira",Partido:"MDB",UF:"SC",Periodo:"2019 - 2027",Candidatura:"O partido ainda negocia apoio ao governo para definir a candidatura da senadora",Foto:"ivete_da_silveira-sc.jpeg"},
+        {Nome:"Jorge Seif",Partido:"PL",UF:"SC",Periodo:"2023 - 2031",Candidatura:"Continua no mandato",Foto:"jorge_seif-sc.jpeg"},
+        {Nome:"Alessandro Vieira",Partido:"MDB",UF:"SE",Periodo:"2019 - 2027",Candidatura:"Candidatura ao Senado",Foto:"alessandro_vieira-se.jpeg"},
+        {Nome:"Laércio Oliveira",Partido:"PP",UF:"SE",Periodo:"2023 - 2031",Candidatura:"Continua no mandato",Foto:"laercio_oliveira-se.jpeg"},
+        {Nome:"Rogério Carvalho",Partido:"PT",UF:"SE",Periodo:"2019 - 2027",Candidatura:"Candidatura ao Senado",Foto:"rogerio_carvalho-se.jpeg"},
+        {Nome:"Astronauta Marcos Pontes",Partido:"PL",UF:"SP",Periodo:"2023 - 2031",Candidatura:"Continua no mandato",Foto:"astronauta_marcos_pontes-sp.jpeg"},
+        {Nome:"Giordano",Partido:"PODEMOS",UF:"SP",Periodo:"2019 - 2027",Candidatura:"",Foto:"giordano-sp.jpeg"},
+        {Nome:"Mara Gabrilli",Partido:"PSD",UF:"SP",Periodo:"2019 - 2027",Candidatura:"Candidatura a Assembleia Legislativa de São Paulo",Foto:"mara_gabrilli-sp.jpeg"},
+        {Nome:"Eduardo Gomes",Partido:"PL",UF:"TO",Periodo:"2019 - 2027",Candidatura:"Chegou a ser sondado para disputar o governo do Tocantins, mas a tendência é de que dispute a reeleição",Foto:"eduardo_gomes-to.jpeg"},
+        {Nome:"Irajá",Partido:"PSD",UF:"TO",Periodo:"2019 - 2027",Candidatura:"Candidatura ao Senado",Foto:"iraja-to.jpeg"},
+        {Nome:"Professora Dorinha Seabra",Partido:"UNIÃO",UF:"TO",Periodo:"2023 - 2031",Candidatura:"Candidatura ao governo do Tocantins",Foto:"professora_dorinha_seabra-to.jpeg"}
+    ];
+
+    document.addEventListener('DOMContentLoaded', () => {
+        const searchInput = document.getElementById('jota-search');
+        const partidoFilter = document.getElementById('jota-filter-partido');
+        const countDisplay = document.getElementById('jota-count');
+        const header = document.getElementById('jota-header');
+
+        // Hide header on scroll down, show on scroll up (mobile only)
+        let lastScrollY = window.scrollY;
+        let ticking = false;
+
+        function onScroll() {
+            const currentScrollY = window.scrollY;
+            const isMobile = window.innerWidth < 768;
+
+            // Shadow effect (always)
+            header.classList.toggle('scrolled', currentScrollY > 16);
+
+            // Hide/show on mobile only
+            if (isMobile) {
+                if (currentScrollY > lastScrollY && currentScrollY > 80) {
+                    header.classList.add('hidden');
+                } else if (currentScrollY < lastScrollY) {
+                    header.classList.remove('hidden');
+                }
+            } else {
+                header.classList.remove('hidden');
+            }
+
+            lastScrollY = currentScrollY;
+            ticking = false;
+        }
+
+        window.addEventListener('scroll', () => {
+            if (!ticking) {
+                window.requestAnimationFrame(onScroll);
+                ticking = true;
+            }
+        }, { passive: true });
+
+        const partidos = [...new Set(senadoresData.map(s => s.Partido))].sort();
+
+        partidos.forEach(p => {
+            const opt = document.createElement('option');
+            opt.value = p; opt.textContent = p;
+            partidoFilter.appendChild(opt);
+        });
+
+        function getMandateYear(s) {
+            return parseInt(s.Periodo.split('-')[1].trim());
+        }
+
+        function getStatusClass(candidatura) {
+            const text = candidatura.toLowerCase();
+            if (text.includes('continua')) return 'status-continua';
+            if (text.includes('senado') || text.includes('reeleição') || text.includes('reeleicao')) return 'status-senado';
+            if (text.includes('governo')) return 'status-governo';
+            if (text.includes('não') || text.includes('nao') || text.includes('aposenta')) return 'status-nao';
+            if (text.includes('definição') || text.includes('definicao') || text === '') return 'status-indefinido';
+            return 'status-outros';
+        }
+
+        function makeCard(s) {
+            const d = document.createElement('div');
+            d.className = 'jota-card';
+            d.innerHTML = `
+                <div class="jota-card-top">
+                    <div class="jota-photo-wrapper">
+                        <img src="fotos/${s.Foto}" alt="${s.Nome}" class="jota-photo" loading="lazy" onerror="this.src='data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 width=%2242%22 height=%2242%22%3E%3Crect width=%2242%22 height=%2242%22 fill=%22%23EEE%22 rx=%2221%22/%3E%3Ctext x=%2221%22 y=%2226%22 text-anchor=%22middle%22 font-size=%2218%22 fill=%22%23999%22 font-family=%22sans-serif%22%3ES%3C/text%3E%3C/svg%3E'">
+                    </div>
+                    <div class="jota-meta">
+                        <span class="jota-name">${s.Nome}</span>
+                        <span class="jota-party">${s.Partido}</span>
+                        <span class="jota-uf">${s.UF}</span>
+                        <span class="jota-mandate">${s.Periodo.split('-')[1].trim()}</span>
+                    </div>
+                </div>
+                <div class="jota-candidatura ${getStatusClass(s.Candidatura)}">${s.Candidatura || 'Sem definição'}</div>`;
+            return d;
+        }
+
+        function renderDesktop(data) {
+            const desk = document.getElementById('jota-desktop');
+            desk.innerHTML = '';
+            const sorted = [...data].sort((a, b) => a.UF.localeCompare(b.UF) || a.Nome.localeCompare(b.Nome));
+            const year2027 = sorted.filter(s => getMandateYear(s) === 2027);
+            const year2031 = sorted.filter(s => getMandateYear(s) === 2031);
+
+            [year2027, year2031].forEach((group, i) => {
+                const year = i === 0 ? 2027 : 2031;
+                const col = document.createElement('div');
+                col.className = 'jota-col';
+                const header = document.createElement('div');
+                header.className = 'jota-col-header';
+                header.innerHTML = `Mandato até <span>${year}</span>`;
+                col.appendChild(header);
+                const sub = document.createElement('div');
+                sub.className = 'jota-col-subheader';
+                sub.textContent = `${group.length} senador${group.length !== 1 ? 'es' : ''}`;
+                col.appendChild(sub);
+                group.forEach(s => col.appendChild(makeCard(s)));
+                desk.appendChild(col);
+            });
+        }
+
+        function renderMobile(data) {
+            const mob = document.getElementById('jota-mobile');
+            mob.innerHTML = '';
+            if (data.length === 0) { mob.innerHTML = '<div class="jota-empty">Nenhum senador encontrado.</div>'; return; }
+            const sorted = [...data].sort((a, b) => a.UF.localeCompare(b.UF) || a.Nome.localeCompare(b.Nome));
+            const table = document.createElement('table');
+            table.className = 'jota-table';
+            const tbody = document.createElement('tbody');
+
+            sorted.forEach(s => {
+                const tr1 = document.createElement('tr');
+                tr1.className = 'tr-main';
+                tr1.innerHTML = `
+                    <td class="td-foto"><img src="fotos/${s.Foto}" alt="${s.Nome}" loading="lazy" onerror="this.src='data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 width=%2234%22 height=%2234%22%3E%3Crect width=%2234%22 height=%2234%22 fill=%22%23EEE%22 rx=%2217%22/%3E%3Ctext x=%2217%22 y=%2222%22 text-anchor=%22middle%22 font-size=%2216%22 fill=%22%23999%22 font-family=%22sans-serif%22%3ES%3C/text%3E%3C/svg%3E'"></td>
+                    <td class="td-nome"><strong>${s.Nome}</strong><span>${s.Partido}</span></td>
+                    <td class="td-uf">${s.UF}</td>
+                    <td class="td-fim">${s.Periodo.split('-')[1].trim()}</td>`;
+                const tr2 = document.createElement('tr');
+                tr2.className = 'tr-status';
+                tr2.innerHTML = `<td></td><td colspan="3" class="td-status"><span class="jota-candidatura ${getStatusClass(s.Candidatura)}">${s.Candidatura || 'Sem definição'}</span></td>`;
+                tbody.appendChild(tr1);
+                tbody.appendChild(tr2);
+            });
+
+            table.appendChild(tbody);
+            mob.appendChild(table);
+        }
+
+        function filterAndRender() {
+            const q = searchInput.value.toLowerCase();
+            const p = partidoFilter.value;
+            let filtered = senadoresData.filter(s =>
+                s.Nome.toLowerCase().includes(q) &&
+                (p === '' || s.Partido === p)
+            );
+            countDisplay.textContent = filtered.length;
+            renderDesktop(filtered);
+            renderMobile(filtered);
+        }
+
+        searchInput.addEventListener('input', filterAndRender);
+        partidoFilter.addEventListener('change', filterAndRender);
+
+        filterAndRender();
+    });
+    </script>
+</body>
+</html>

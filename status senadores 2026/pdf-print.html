@@ -1,0 +1,404 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <title>Senadores 2026 — JOTA (PDF)</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+
+        :root {
+            --jota-orange: #F05841;
+            --bg: #F5F5F7;
+            --surface: #FFFFFF;
+            --border: #E5E5EA;
+            --border-light: #F0F0F2;
+            --text-primary: #1D1D1F;
+            --text-secondary: #6E6E73;
+            --text-tertiary: #86868B;
+            --dot-continua: #43A047;
+            --dot-senado: #E53935;
+            --dot-governo: #1E88E5;
+            --dot-indefinido: #FB8C00;
+            --dot-nao: #757575;
+            --dot-outros: #8E24AA;
+            --desc-bg: #F2F2F4;
+            --desc-text: #232323;
+            --radius-sm: 6px;
+            --radius-md: 10px;
+        }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Helvetica Neue', sans-serif;
+            background: white;
+            color: var(--text-primary);
+            font-size: 11px;
+            line-height: 1.4;
+            padding: 0;
+        }
+
+        .page {
+            width: 210mm;
+            min-height: 297mm;
+            padding: 15mm 18mm 12mm;
+            margin: 0 auto;
+            background: white;
+        }
+
+        /* ── Title ── */
+        .pdf-title {
+            font-size: 22px;
+            font-weight: 800;
+            letter-spacing: -0.02em;
+            margin-bottom: 10px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .pdf-title-accent {
+            display: inline-block;
+            width: 4px;
+            height: 22px;
+            background: var(--jota-orange);
+            border-radius: 2px;
+        }
+        .pdf-title-year {
+            font-weight: 600;
+            color: var(--jota-orange);
+        }
+
+        /* ── Legend ── */
+        .pdf-legend {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 4px 14px;
+            margin-bottom: 14px;
+            padding: 8px 12px;
+            background: var(--bg);
+            border: 1px solid var(--border-light);
+            border-radius: var(--radius-md);
+            font-size: 9px;
+        }
+        .pdf-legend-item {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            color: var(--text-secondary);
+            font-weight: 500;
+        }
+        .pdf-legend-dot {
+            display: inline-block;
+            width: 7px;
+            height: 7px;
+            border-radius: 50%;
+            flex-shrink: 0;
+        }
+
+        /* ── Two-column layout ── */
+        .pdf-columns {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 14px;
+            align-items: start;
+        }
+
+        .pdf-col-header {
+            font-size: 10px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.06em;
+            padding: 6px 0 3px;
+            color: var(--text-secondary);
+            border-bottom: 1px solid var(--border-light);
+            margin-bottom: 4px;
+        }
+        .pdf-col-header span { font-weight: 600; }
+        .pdf-col-sub {
+            font-size: 8.5px;
+            color: var(--text-tertiary);
+            margin-bottom: 6px;
+            font-weight: 400;
+        }
+
+        /* ── Cards compactos ── */
+        .pdf-card {
+            padding: 5px 8px 4px;
+            border-radius: var(--radius-sm);
+            border: 1px solid var(--border-light);
+            background: var(--surface);
+            display: flex;
+            flex-direction: column;
+            gap: 3px;
+            margin-bottom: 3px;
+            break-inside: avoid;
+        }
+        .pdf-card-top {
+            display: flex;
+            align-items: center;
+            gap: 7px;
+        }
+        .pdf-photo {
+            width: 26px;
+            height: 26px;
+            object-fit: cover;
+            border-radius: 50%;
+            display: block;
+            border: 1.5px solid white;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+            flex-shrink: 0;
+        }
+        .pdf-meta {
+            display: flex;
+            align-items: baseline;
+            gap: 4px;
+            flex-wrap: wrap;
+            min-width: 0;
+        }
+        .pdf-name {
+            font-size: 10px;
+            font-weight: 700;
+            white-space: nowrap;
+            color: var(--text-primary);
+        }
+        .pdf-party {
+            font-size: 8px;
+            color: var(--text-secondary);
+            font-weight: 500;
+        }
+        .pdf-uf {
+            font-size: 8px;
+            font-weight: 700;
+            color: var(--text-primary);
+            background: var(--bg);
+            padding: 0 4px;
+            border-radius: 3px;
+        }
+        .pdf-mandate {
+            font-size: 8px;
+            color: var(--text-tertiary);
+            font-weight: 500;
+            margin-left: auto;
+            flex-shrink: 0;
+            background: var(--bg);
+            padding: 0 5px;
+            border-radius: 3px;
+        }
+        .pdf-candidatura {
+            font-size: 8px;
+            padding: 3px 7px;
+            border-radius: 4px;
+            font-weight: 400;
+            color: var(--desc-text);
+            background: var(--desc-bg);
+            display: flex;
+            align-items: flex-start;
+            gap: 5px;
+            line-height: 1.4;
+        }
+        .pdf-candidatura::before {
+            content: '';
+            display: inline-block;
+            width: 6px;
+            height: 6px;
+            border-radius: 50%;
+            flex-shrink: 0;
+            margin-top: 4px;
+        }
+        .status-continua::before   { background: var(--dot-continua); }
+        .status-senado::before     { background: var(--dot-senado); }
+        .status-governo::before    { background: var(--dot-governo); }
+        .status-indefinido::before { background: var(--dot-indefinido); }
+        .status-nao::before        { background: var(--dot-nao); }
+        .status-outros::before     { background: var(--dot-outros); }
+
+        .pdf-footer {
+            text-align: center;
+            font-size: 8px;
+            color: var(--text-tertiary);
+            border-top: 1px solid var(--border-light);
+            margin-top: 16px;
+            padding-top: 10px;
+            font-weight: 500;
+        }
+        .pdf-footer strong { color: var(--text-primary); font-weight: 700; }
+
+        @page {
+            size: A4;
+            margin: 0;
+        }
+        @media print {
+            body { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+        }
+    </style>
+</head>
+<body>
+    <div class="page">
+        <div class="pdf-title">
+            <span class="pdf-title-accent"></span>
+            Senadores <span class="pdf-title-year">2026</span>
+        </div>
+
+        <div class="pdf-legend">
+            <span class="pdf-legend-item"><span class="pdf-legend-dot" style="background:var(--dot-continua)"></span> Continua no mandato</span>
+            <span class="pdf-legend-item"><span class="pdf-legend-dot" style="background:var(--dot-senado)"></span> Candidatura ao Senado</span>
+            <span class="pdf-legend-item"><span class="pdf-legend-dot" style="background:var(--dot-governo)"></span> Candidatura a Governo</span>
+            <span class="pdf-legend-item"><span class="pdf-legend-dot" style="background:var(--dot-indefinido)"></span> Indefinido</span>
+            <span class="pdf-legend-item"><span class="pdf-legend-dot" style="background:var(--dot-nao)"></span> Não será candidato</span>
+            <span class="pdf-legend-item"><span class="pdf-legend-dot" style="background:var(--dot-outros)"></span> Outros</span>
+        </div>
+
+        <div class="pdf-columns" id="pdf-columns"></div>
+
+        <div class="pdf-footer">
+            <strong id="pdf-count">0</strong> senadores
+        </div>
+    </div>
+
+    <script>
+    const senadoresData = [
+        {Nome:"Alan Rick",Partido:"REPUBLICANOS",UF:"AC",Periodo:"2023 - 2031",Candidatura:"Candidatura ao governo do Acre",Foto:"https://guilhermegomes.des.br/jota/img/senadores2026/alan_rick-ac.jpeg"},
+        {Nome:"Marcio Bittar",Partido:"PL",UF:"AC",Periodo:"2019 - 2027",Candidatura:"Candidatura ao Senado",Foto:"https://guilhermegomes.des.br/jota/img/senadores2026/marcio_bittar-ac.jpeg"},
+        {Nome:"Sérgio Petecão",Partido:"PSD",UF:"AC",Periodo:"2019 - 2027",Candidatura:"Candidatura ao governo do Acre",Foto:"https://guilhermegomes.des.br/jota/img/senadores2026/sergio_petecao-ac.jpeg"},
+        {Nome:"Dra. Eudócia",Partido:"PSDB",UF:"AL",Periodo:"2019 - 2027",Candidatura:"Sem definição",Foto:"https://guilhermegomes.des.br/jota/img/senadores2026/dra_eudocia-al.jpeg"},
+        {Nome:"Renan Filho",Partido:"MDB",UF:"AL",Periodo:"2023 - 2031",Candidatura:"Candidatura ao governo de Alagoas",Foto:"https://guilhermegomes.des.br/jota/img/senadores2026/renan_filho-al.jpeg"},
+        {Nome:"Renan Calheiros",Partido:"MDB",UF:"AL",Periodo:"2019 - 2027",Candidatura:"Candidatura ao Senado",Foto:"https://guilhermegomes.des.br/jota/img/senadores2026/renan_calheiros-al.jpeg"},
+        {Nome:"Eduardo Braga",Partido:"MDB",UF:"AM",Periodo:"2019 - 2027",Candidatura:"Candidatura ao Senado",Foto:"https://guilhermegomes.des.br/jota/img/senadores2026/eduardo_braga-am.jpeg"},
+        {Nome:"Omar Aziz",Partido:"PSD",UF:"AM",Periodo:"2023 - 2031",Candidatura:"Candidatura ao governo do Amazonas",Foto:"https://guilhermegomes.des.br/jota/img/senadores2026/omar_aziz-am.jpeg"},
+        {Nome:"Plínio Valério",Partido:"PSDB",UF:"AM",Periodo:"2019 - 2027",Candidatura:"Candidatura ao Senado",Foto:"https://guilhermegomes.des.br/jota/img/senadores2026/plinio_valerio-am.jpeg"},
+        {Nome:"Davi Alcolumbre",Partido:"UNIÃO",UF:"AP",Periodo:"2023 - 2031",Candidatura:"Continua no mandato",Foto:"https://guilhermegomes.des.br/jota/img/senadores2026/davi_alcolumbre-ap.jpeg"},
+        {Nome:"Lucas Barreto",Partido:"PSD",UF:"AP",Periodo:"2019 - 2027",Candidatura:"Candidatura ao Senado",Foto:"https://guilhermegomes.des.br/jota/img/senadores2026/lucas_barreto-ap.jpeg"},
+        {Nome:"Randolfe Rodrigues",Partido:"PT",UF:"AP",Periodo:"2019 - 2027",Candidatura:"Candidatura ao Senado",Foto:"https://guilhermegomes.des.br/jota/img/senadores2026/randolfe_rodrigues-ap.jpeg"},
+        {Nome:"Angelo Coronel",Partido:"REPUBLICANOS",UF:"BA",Periodo:"2019 - 2027",Candidatura:"Candidatura ao Senado",Foto:"https://guilhermegomes.des.br/jota/img/senadores2026/angelo_coronel-ba.jpeg"},
+        {Nome:"Jaques Wagner",Partido:"PT",UF:"BA",Periodo:"2019 - 2027",Candidatura:"Candidatura ao Senado",Foto:"https://guilhermegomes.des.br/jota/img/senadores2026/jaques_wagner-ba.jpeg"},
+        {Nome:"Otto Alencar",Partido:"PSD",UF:"BA",Periodo:"2023 - 2031",Candidatura:"Continua no mandato",Foto:"https://guilhermegomes.des.br/jota/img/senadores2026/otto_alencar-ba.jpeg"},
+        {Nome:"Camilo Santana",Partido:"PT",UF:"CE",Periodo:"2023 - 2031",Candidatura:"Possibilidade de candidatura, mas sem cargo definido",Foto:"https://guilhermegomes.des.br/jota/img/senadores2026/camilo_santana-ce.jpeg"},
+        {Nome:"Cid Gomes",Partido:"PSB",UF:"CE",Periodo:"2019 - 2027",Candidatura:"Possibilidade de candidatura, mas sem cargo definido ou se irá disputar as eleições",Foto:"https://guilhermegomes.des.br/jota/img/senadores2026/cig_gomes-ce.jpeg"},
+        {Nome:"Eduardo Girão",Partido:"NOVO",UF:"CE",Periodo:"2019 - 2027",Candidatura:"Candidatura ao governo do Ceará",Foto:"https://guilhermegomes.des.br/jota/img/senadores2026/eduardo_girao-ce.jpeg"},
+        {Nome:"Damares Alves",Partido:"REPUBLICANOS",UF:"DF",Periodo:"2023 - 2031",Candidatura:"Continua no mandato",Foto:"https://guilhermegomes.des.br/jota/img/senadores2026/damares_alves-df.jpeg"},
+        {Nome:"Izalci Lucas",Partido:"PL",UF:"DF",Periodo:"2019 - 2027",Candidatura:"Candidatura ao governo do Distrito Federal",Foto:"https://guilhermegomes.des.br/jota/img/senadores2026/izalci_lucas-df.jpeg"},
+        {Nome:"Leila Barros",Partido:"PDT",UF:"DF",Periodo:"2019 - 2027",Candidatura:"Candidatura ao Senado",Foto:"https://guilhermegomes.des.br/jota/img/senadores2026/leila_barros-df.jpeg"},
+        {Nome:"Fabiano Contarato",Partido:"PT",UF:"ES",Periodo:"2019 - 2027",Candidatura:"Candidatura ao Senado",Foto:"https://guilhermegomes.des.br/jota/img/senadores2026/fabiano_contarato-es.jpeg"},
+        {Nome:"Magno Malta",Partido:"PL",UF:"ES",Periodo:"2023 - 2031",Candidatura:"Há interesse para disputar o governo do Espírito Santo, mas não está nada definido",Foto:"https://guilhermegomes.des.br/jota/img/senadores2026/magno_malta-es.jpeg"},
+        {Nome:"Marcos do Val",Partido:"AVANTE",UF:"ES",Periodo:"2019 - 2027",Candidatura:"Articula reeleição ao Senado",Foto:"https://guilhermegomes.des.br/jota/img/senadores2026/marcos_do_val-es.jpeg"},
+        {Nome:"Jorge Kajuru",Partido:"PSB",UF:"GO",Periodo:"2019 - 2027",Candidatura:"Não será candidato",Foto:"https://guilhermegomes.des.br/jota/img/senadores2026/jorge_kajuru-go.jpeg"},
+        {Nome:"Vanderlan Cardoso",Partido:"PSD",UF:"GO",Periodo:"2019 - 2027",Candidatura:"Candidatura ao Senado",Foto:"https://guilhermegomes.des.br/jota/img/senadores2026/vanderlan_cardoso-go.jpeg"},
+        {Nome:"Wilder Morais",Partido:"PL",UF:"GO",Periodo:"2023 - 2031",Candidatura:"Candidatura ao governo de Goiás",Foto:"https://guilhermegomes.des.br/jota/img/senadores2026/wilder_morais-go.jpeg"},
+        {Nome:"Ana Paula Lobato",Partido:"PSB",UF:"MA",Periodo:"2023 - 2031",Candidatura:"Continua no mandato",Foto:"https://guilhermegomes.des.br/jota/img/senadores2026/ana_paula_lobato-ma.jpeg"},
+        {Nome:"Eliziane Gama",Partido:"PT",UF:"MA",Periodo:"2019 - 2027",Candidatura:"Candidatura ao Senado",Foto:"https://guilhermegomes.des.br/jota/img/senadores2026/eliziane_gama-ma.jpeg"},
+        {Nome:"Weverton",Partido:"PDT",UF:"MA",Periodo:"2019 - 2027",Candidatura:"Candidatura ao Senado",Foto:"https://guilhermegomes.des.br/jota/img/senadores2026/weverton-ma.jpeg"},
+        {Nome:"Carlos Viana",Partido:"PSD",UF:"MG",Periodo:"2019 - 2027",Candidatura:"Candidatura ao Senado",Foto:"https://guilhermegomes.des.br/jota/img/senadores2026/carlos_viana-mg.jpeg"},
+        {Nome:"Cleitinho",Partido:"REPUBLICANOS",UF:"MG",Periodo:"2023 - 2031",Candidatura:"Candidatura ao governo de Minas Gerais",Foto:"https://guilhermegomes.des.br/jota/img/senadores2026/cleitinho-mg.jpeg"},
+        {Nome:"Rodrigo Pacheco",Partido:"PSB",UF:"MG",Periodo:"2019 - 2027",Candidatura:"Sondado por Lula ao governo de Minas Gerais, mas o martelo ainda não foi batido",Foto:"https://guilhermegomes.des.br/jota/img/senadores2026/rodrigo_pacheco-mg.jpeg"},
+        {Nome:"Nelsinho Trad",Partido:"PSD",UF:"MS",Periodo:"2019 - 2027",Candidatura:"Candidatura ao Senado",Foto:"https://guilhermegomes.des.br/jota/img/senadores2026/nelsinho_trad-ms.jpeg"},
+        {Nome:"Soraya Thronicke",Partido:"PSB",UF:"MS",Periodo:"2019 - 2027",Candidatura:"Candidatura ao Senado",Foto:"https://guilhermegomes.des.br/jota/img/senadores2026/soraya_thronicke-ms.jpeg"},
+        {Nome:"Tereza Cristina",Partido:"PP",UF:"MS",Periodo:"2023 - 2031",Candidatura:"Continua no mandato",Foto:"https://guilhermegomes.des.br/jota/img/senadores2026/tereza_cristina-ms.jpeg"},
+        {Nome:"Jayme Campos",Partido:"UNIÃO",UF:"MT",Periodo:"2019 - 2027",Candidatura:"Candidatura ao governo de Mato Grosso",Foto:"https://guilhermegomes.des.br/jota/img/senadores2026/jayme_campos-mt.jpeg"},
+        {Nome:"Carlos Fávaro",Partido:"PSD",UF:"MT",Periodo:"2019 - 2027",Candidatura:"Candidatura ao Senado",Foto:"https://guilhermegomes.des.br/jota/img/senadores2026/carlos_favaro-mt.jpeg"},
+        {Nome:"Wellington Fagundes",Partido:"PL",UF:"MT",Periodo:"2023 - 2031",Candidatura:"Candidatura ao governo de Mato Grosso",Foto:"https://guilhermegomes.des.br/jota/img/senadores2026/wellington_fagundes-mt.jpeg"},
+        {Nome:"Beto Faro",Partido:"PT",UF:"PA",Periodo:"2023 - 2031",Candidatura:"Continua no mandato",Foto:"https://guilhermegomes.des.br/jota/img/senadores2026/beto_faro-pa.jpeg"},
+        {Nome:"Jader Barbalho",Partido:"MDB",UF:"PA",Periodo:"2019 - 2027",Candidatura:"Não será candidato",Foto:"https://guilhermegomes.des.br/jota/img/senadores2026/jader_barbalho-pa.jpeg"},
+        {Nome:"Zequinha Marinho",Partido:"PODEMOS",UF:"PA",Periodo:"2019 - 2027",Candidatura:"Candidatura ao Senado",Foto:"https://guilhermegomes.des.br/jota/img/senadores2026/zequinha_marinho-pa.jpeg"},
+        {Nome:"Daniella Ribeiro",Partido:"PP",UF:"PB",Periodo:"2019 - 2027",Candidatura:"Não será candidata. No lugar dela, o governador João Azevedo será o candidato e o filho da senadora, Lucas Ribeiro, será candidato ao governo do estado. O pai do presidente da Câmara, Hugo Motta, Nabor Wanderley, também será candidato ao Senado",Foto:"https://guilhermegomes.des.br/jota/img/senadores2026/daniella_ribeiro-pb.jpeg"},
+        {Nome:"Efraim Filho",Partido:"PL",UF:"PB",Periodo:"2023 - 2031",Candidatura:"Candidatura ao governo da Paraíba",Foto:"https://guilhermegomes.des.br/jota/img/senadores2026/efraim_filho-pb.jpeg"},
+        {Nome:"Veneziano Vital do Rêgo",Partido:"MDB",UF:"PB",Periodo:"2019 - 2027",Candidatura:"Candidatura ao Senado",Foto:"https://guilhermegomes.des.br/jota/img/senadores2026/veneziano_vital_do_rego-pb.jpeg"},
+        {Nome:"Fernando Dueire",Partido:"PSD",UF:"PE",Periodo:"2019 - 2027",Candidatura:"Candidatura ao Senado",Foto:"https://guilhermegomes.des.br/jota/img/senadores2026/fernando-dueire-pe.jpeg"},
+        {Nome:"Humberto Costa",Partido:"PT",UF:"PE",Periodo:"2019 - 2027",Candidatura:"Candidatura ao Senado",Foto:"https://guilhermegomes.des.br/jota/img/senadores2026/humberto_costa-pe.jpeg"},
+        {Nome:"Teresa Leitão",Partido:"PT",UF:"PE",Periodo:"2023 - 2031",Candidatura:"Continua no mandato",Foto:"https://guilhermegomes.des.br/jota/img/senadores2026/teresa_leitao-pe.jpeg"},
+        {Nome:"Ciro Nogueira",Partido:"PP",UF:"PI",Periodo:"2019 - 2027",Candidatura:"Candidatura ao Senado",Foto:"https://guilhermegomes.des.br/jota/img/senadores2026/ciro_nogueira-pi.jpeg"},
+        {Nome:"Jussara Lima",Partido:"PSD",UF:"PI",Periodo:"2023 - 2031",Candidatura:"Continua no mandato",Foto:"https://guilhermegomes.des.br/jota/img/senadores2026/jussara_lima-pi.jpeg"},
+        {Nome:"Marcelo Castro",Partido:"MDB",UF:"PI",Periodo:"2019 - 2027",Candidatura:"Candidatura ao Senado",Foto:"https://guilhermegomes.des.br/jota/img/senadores2026/marcelo_castro-pi.jpeg"},
+        {Nome:"Flávio Arns",Partido:"PSB",UF:"PR",Periodo:"2019 - 2027",Candidatura:"Ainda sem definição",Foto:"https://guilhermegomes.des.br/jota/img/senadores2026/flavio_arns-pr.jpeg"},
+        {Nome:"Oriovisto Guimarães",Partido:"PSDB",UF:"PR",Periodo:"2019 - 2027",Candidatura:"Não será candidato",Foto:"https://guilhermegomes.des.br/jota/img/senadores2026/oriovisto_guimaraes-pr.jpeg"},
+        {Nome:"Sergio Moro",Partido:"PL",UF:"PR",Periodo:"2023 - 2031",Candidatura:"Candidatura ao governo do Paraná",Foto:"https://guilhermegomes.des.br/jota/img/senadores2026/sergio_moro-pr.jpeg"},
+        {Nome:"Romário",Partido:"PL",UF:"RJ",Periodo:"2023 - 2031",Candidatura:"Continua no mandato",Foto:"https://guilhermegomes.des.br/jota/img/senadores2026/romario-rj.jpeg"},
+        {Nome:"Carlos Portinho",Partido:"PL",UF:"RJ",Periodo:"2019 - 2027",Candidatura:"Candidatura a deputado federal",Foto:"https://guilhermegomes.des.br/jota/img/senadores2026/carlos_portinho-rj.jpeg"},
+        {Nome:"Flávio Bolsonaro",Partido:"PL",UF:"RJ",Periodo:"2019 - 2027",Candidatura:"Candidatura ao Planalto",Foto:"https://guilhermegomes.des.br/jota/img/senadores2026/flavio_bolsonaro-rj.jpeg"},
+        {Nome:"Rogerio Marinho",Partido:"PL",UF:"RN",Periodo:"2023 - 2031",Candidatura:"Ficará responsável por organizar a campanha de Flávio Bolsonaro",Foto:"https://guilhermegomes.des.br/jota/img/senadores2026/rogerio_marinho-rn.jpeg"},
+        {Nome:"Styvenson Valentim",Partido:"PODEMOS",UF:"RN",Periodo:"2019 - 2027",Candidatura:"Candidatura ao Senado",Foto:"https://guilhermegomes.des.br/jota/img/senadores2026/styvenson_valentim-rn.jpeg"},
+        {Nome:"Zenaide Maia",Partido:"PSD",UF:"RN",Periodo:"2019 - 2027",Candidatura:"Candidatura ao Senado",Foto:"https://guilhermegomes.des.br/jota/img/senadores2026/zenaide_maia-rn.jpeg"},
+        {Nome:"Confúcio Moura",Partido:"MDB",UF:"RO",Periodo:"2019 - 2027",Candidatura:"Possível candidatura ao Senado, mas o martelo ainda não foi batido",Foto:"https://guilhermegomes.des.br/jota/img/senadores2026/confucio_moura-ro.jpeg"},
+        {Nome:"Jaime Bagattoli",Partido:"PL",UF:"RO",Periodo:"2023 - 2031",Candidatura:"Continua no mandato",Foto:"https://guilhermegomes.des.br/jota/img/senadores2026/jaime_bagattoli-ro.jpeg"},
+        {Nome:"Marcos Rogério",Partido:"PL",UF:"RO",Periodo:"2019 - 2027",Candidatura:"Candidatura ao governo de Rondônia",Foto:"https://guilhermegomes.des.br/jota/img/senadores2026/marcos_rogerio-ro.jpeg"},
+        {Nome:"Chico Rodrigues",Partido:"PSB",UF:"RR",Periodo:"2019 - 2027",Candidatura:"Candidatura ao Senado",Foto:"https://guilhermegomes.des.br/jota/img/senadores2026/chico_rodrigues-rr.jpeg"},
+        {Nome:"Dr. Hiran",Partido:"PP",UF:"RR",Periodo:"2023 - 2031",Candidatura:"Continua no mandato",Foto:"https://guilhermegomes.des.br/jota/img/senadores2026/dr_hiran-rr.jpeg"},
+        {Nome:"Roberta Acioly",Partido:"REPUBLICANOS",UF:"RR",Periodo:"2019 - 2027",Candidatura:"Candidatura à Câmara dos Deputados",Foto:"https://guilhermegomes.des.br/jota/img/senadores2026/roberta_acioly-rr.jpeg"},
+        {Nome:"Hamilton Mourão",Partido:"REPUBLICANOS",UF:"RS",Periodo:"2023 - 2031",Candidatura:"Continua no mandato",Foto:"https://guilhermegomes.des.br/jota/img/senadores2026/hamilton_mourao-rs.jpeg"},
+        {Nome:"Luis Carlos Heinze",Partido:"PP",UF:"RS",Periodo:"2019 - 2027",Candidatura:"Não será candidato",Foto:"https://guilhermegomes.des.br/jota/img/senadores2026/luis_carlos_heinze-rs.jpeg"},
+        {Nome:"Paulo Paim",Partido:"PT",UF:"RS",Periodo:"2019 - 2027",Candidatura:"Não será candidato",Foto:"https://guilhermegomes.des.br/jota/img/senadores2026/paulo_paim-rs.jpeg"},
+        {Nome:"Esperidião Amin",Partido:"PP",UF:"SC",Periodo:"2019 - 2027",Candidatura:"Candidatura ao Senado",Foto:"https://guilhermegomes.des.br/jota/img/senadores2026/esperidiao_amin-sc.jpeg"},
+        {Nome:"Ivete da Silveira",Partido:"MDB",UF:"SC",Periodo:"2019 - 2027",Candidatura:"O partido ainda negocia apoio ao governo para definir a candidatura da senadora",Foto:"https://guilhermegomes.des.br/jota/img/senadores2026/ivete_da_silveira-sc.jpeg"},
+        {Nome:"Jorge Seif",Partido:"PL",UF:"SC",Periodo:"2023 - 2031",Candidatura:"Continua no mandato",Foto:"https://guilhermegomes.des.br/jota/img/senadores2026/jorge_seif-sc.jpeg"},
+        {Nome:"Alessandro Vieira",Partido:"MDB",UF:"SE",Periodo:"2019 - 2027",Candidatura:"Candidatura ao Senado",Foto:"https://guilhermegomes.des.br/jota/img/senadores2026/alessandro_vieira-se.jpeg"},
+        {Nome:"Laércio Oliveira",Partido:"PP",UF:"SE",Periodo:"2023 - 2031",Candidatura:"Continua no mandato",Foto:"https://guilhermegomes.des.br/jota/img/senadores2026/laercio_oliveira-se.jpeg"},
+        {Nome:"Rogério Carvalho",Partido:"PT",UF:"SE",Periodo:"2019 - 2027",Candidatura:"Candidatura ao Senado",Foto:"https://guilhermegomes.des.br/jota/img/senadores2026/rogerio_carvalho-se.jpeg"},
+        {Nome:"Astronauta Marcos Pontes",Partido:"PL",UF:"SP",Periodo:"2023 - 2031",Candidatura:"Continua no mandato",Foto:"https://guilhermegomes.des.br/jota/img/senadores2026/astronauta_marcos_pontes-sp.jpeg"},
+        {Nome:"Giordano",Partido:"PODEMOS",UF:"SP",Periodo:"2019 - 2027",Candidatura:"",Foto:"https://guilhermegomes.des.br/jota/img/senadores2026/giordano-sp.jpeg"},
+        {Nome:"Mara Gabrilli",Partido:"PSD",UF:"SP",Periodo:"2019 - 2027",Candidatura:"Candidatura a Assembleia Legislativa de São Paulo",Foto:"https://guilhermegomes.des.br/jota/img/senadores2026/mara_gabrilli-sp.jpeg"},
+        {Nome:"Eduardo Gomes",Partido:"PL",UF:"TO",Periodo:"2019 - 2027",Candidatura:"Chegou a ser sondado para disputar o governo do Tocantins, mas a tendência é de que dispute a reeleição",Foto:"https://guilhermegomes.des.br/jota/img/senadores2026/eduardo_gomes-to.jpeg"},
+        {Nome:"Irajá",Partido:"PSD",UF:"TO",Periodo:"2019 - 2027",Candidatura:"Candidatura ao Senado",Foto:"https://guilhermegomes.des.br/jota/img/senadores2026/iraja-to.jpeg"},
+        {Nome:"Professora Dorinha Seabra",Partido:"UNIÃO",UF:"TO",Periodo:"2023 - 2031",Candidatura:"Candidatura ao governo do Tocantins",Foto:"https://guilhermegomes.des.br/jota/img/senadores2026/professora_dorinha_seabra-to.jpeg"}
+    ];
+
+    function getMandateYear(s) {
+        return parseInt(s.Periodo.split('-')[1].trim());
+    }
+
+    function getStatusClass(candidatura) {
+        const text = candidatura.toLowerCase();
+        if (text.includes('continua')) return 'status-continua';
+        if (text.includes('senado') || text.includes('reeleição') || text.includes('reeleicao')) return 'status-senado';
+        if (text.includes('governo')) return 'status-governo';
+        if (text.includes('não') || text.includes('nao') || text.includes('aposenta')) return 'status-nao';
+        if (text.includes('definição') || text.includes('definicao') || text === '') return 'status-indefinido';
+        return 'status-outros';
+    }
+
+    function makeCard(s) {
+        const d = document.createElement('div');
+        d.className = 'pdf-card';
+        d.innerHTML = `
+            <div class="pdf-card-top">
+                <img src="${s.Foto}" alt="${s.Nome}" class="pdf-photo" loading="lazy">
+                <div class="pdf-meta">
+                    <span class="pdf-name">${s.Nome}</span>
+                    <span class="pdf-party">${s.Partido}</span>
+                    <span class="pdf-uf">${s.UF}</span>
+                    <span class="pdf-mandate">${s.Periodo.split('-')[1].trim()}</span>
+                </div>
+            </div>
+            <div class="pdf-candidatura ${getStatusClass(s.Candidatura)}">${s.Candidatura || 'Sem definição'}</div>`;
+        return d;
+    }
+
+    function render() {
+        const container = document.getElementById('pdf-columns');
+        container.innerHTML = '';
+        const sorted = [...senadoresData].sort((a, b) => a.UF.localeCompare(b.UF) || a.Nome.localeCompare(b.Nome));
+        const year2027 = sorted.filter(s => getMandateYear(s) === 2027);
+        const year2031 = sorted.filter(s => getMandateYear(s) === 2031);
+
+        [year2027, year2031].forEach((group, i) => {
+            const year = i === 0 ? 2027 : 2031;
+            const col = document.createElement('div');
+            col.className = 'pdf-col';
+            const header = document.createElement('div');
+            header.className = 'pdf-col-header';
+            header.innerHTML = `Mandato até <span>${year}</span>`;
+            col.appendChild(header);
+            const sub = document.createElement('div');
+            sub.className = 'pdf-col-sub';
+            sub.textContent = `${group.length} senador${group.length !== 1 ? 'es' : ''}`;
+            col.appendChild(sub);
+            group.forEach(s => col.appendChild(makeCard(s)));
+            container.appendChild(col);
+        });
+
+        document.getElementById('pdf-count').textContent = sorted.length;
+    }
+
+    document.addEventListener('DOMContentLoaded', render);
+    </script>
+</body>
+</html>

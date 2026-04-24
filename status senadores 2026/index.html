@@ -810,7 +810,7 @@
             d.innerHTML = `
                 <div class="jota-card-top">
                     <div class="jota-photo-wrapper">
-                        <img src="fotos/${s.Foto}" alt="${s.Nome}" class="jota-photo" loading="lazy" onerror="this.src='data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 width=%2242%22 height=%2242%22%3E%3Crect width=%2242%22 height=%2242%22 fill=%22%23EEE%22 rx=%2221%22/%3E%3Ctext x=%2221%22 y=%2226%22 text-anchor=%22middle%22 font-size=%2218%22 fill=%22%23999%22 font-family=%22sans-serif%22%3ES%3C/text%3E%3C/svg%3E'">
+                        <img src="https://guilhermegomes.des.br/jota/img/senadores2026/${s.Foto}" alt="${s.Nome}" class="jota-photo" loading="lazy" onerror="this.src='data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 width=%2242%22 height=%2242%22%3E%3Crect width=%2242%22 height=%2242%22 fill=%22%23EEE%22 rx=%2221%22/%3E%3Ctext x=%2221%22 y=%2226%22 text-anchor=%22middle%22 font-size=%2218%22 fill=%22%23999%22 font-family=%22sans-serif%22%3ES%3C/text%3E%3C/svg%3E'">
                     </div>
                     <div class="jota-meta">
                         <span class="jota-name">${s.Nome}</span>
@@ -860,7 +860,7 @@
                 const tr1 = document.createElement('tr');
                 tr1.className = 'tr-main';
                 tr1.innerHTML = `
-                    <td class="td-foto"><img src="fotos/${s.Foto}" alt="${s.Nome}" loading="lazy" onerror="this.src='data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 width=%2234%22 height=%2234%22%3E%3Crect width=%2234%22 height=%2234%22 fill=%22%23EEE%22 rx=%2217%22/%3E%3Ctext x=%2217%22 y=%2222%22 text-anchor=%22middle%22 font-size=%2216%22 fill=%22%23999%22 font-family=%22sans-serif%22%3ES%3C/text%3E%3C/svg%3E'"></td>
+                    <td class="td-foto"><img src="https://guilhermegomes.des.br/jota/img/senadores2026/${s.Foto}" alt="${s.Nome}" loading="lazy" onerror="this.src='data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 width=%2234%22 height=%2234%22%3E%3Crect width=%2234%22 height=%2234%22 fill=%22%23EEE%22 rx=%2217%22/%3E%3Ctext x=%2217%22 y=%2222%22 text-anchor=%22middle%22 font-size=%2216%22 fill=%22%23999%22 font-family=%22sans-serif%22%3ES%3C/text%3E%3C/svg%3E'"></td>
                     <td class="td-nome"><strong>${s.Nome}</strong><span>${s.Partido}</span></td>
                     <td class="td-uf">${s.UF}</td>
                     <td class="td-fim">${s.Periodo.split('-')[1].trim()}</td>`;

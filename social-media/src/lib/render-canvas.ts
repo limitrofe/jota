@@ -89,7 +89,7 @@ function drawFill(
   if (fill.startsWith("linear-gradient(")) {
     const match = fill.match(/linear-gradient\(([^,]+)deg,\s*([^)]+)\)/);
     if (!match) {
-      ctx.fillStyle = "#111827";
+      ctx.fillStyle = "#E5E7EB";
       ctx.fillRect(x, y, width, height);
       return;
     }
@@ -116,7 +116,7 @@ function drawFill(
     return;
   }
 
-  ctx.fillStyle = parseFill(fill) ?? "#111827";
+  ctx.fillStyle = parseFill(fill) ?? "#E5E7EB";
   ctx.fillRect(x, y, width, height);
 }
 
@@ -216,7 +216,7 @@ async function renderLayer(
         }
 
         if (element instanceof HTMLImageElement && !element.complete) {
-          drawFill(ctx, "#0F172A", bounds.x, bounds.y, bounds.width, bounds.height);
+          drawFill(ctx, "#F3F4F6", bounds.x, bounds.y, bounds.width, bounds.height);
           return;
         }
 
@@ -238,13 +238,13 @@ async function renderLayer(
       const resolvedSource = source?.src ?? layer.asset?.dataUrl;
       if (!resolvedSource) {
         drawRoundedRect(ctx, bounds.x, bounds.y, bounds.width, bounds.height, layer.radius);
-        ctx.fillStyle = "#1F2937";
+        ctx.fillStyle = "#F3F4F6";
         ctx.fill();
-        ctx.strokeStyle = "rgba(255,255,255,0.16)";
+        ctx.strokeStyle = "rgba(17,17,17,0.10)";
         ctx.lineWidth = 4;
         ctx.stroke();
-        ctx.fillStyle = "rgba(255,255,255,0.75)";
-        ctx.font = `600 ${Math.max(20, Math.min(bounds.width, bounds.height) * 0.08)}px var(--font-body)`;
+        ctx.fillStyle = "rgba(17,17,17,0.72)";
+        ctx.font = `600 ${Math.max(20, Math.min(bounds.width, bounds.height) * 0.08)}px Roboto, sans-serif`;
         ctx.textAlign = "center";
         ctx.textBaseline = "middle";
         ctx.fillText(layer.kind === "video" ? "Vídeo" : "Imagem", bounds.x + bounds.width / 2, bounds.y + bounds.height / 2);
@@ -274,18 +274,18 @@ async function renderLayer(
         ctx.clip();
         try {
           if (element instanceof HTMLImageElement && !element.complete) {
-            drawFill(ctx, "#0F172A", bounds.x, bounds.y, bounds.width, bounds.height);
+            drawFill(ctx, "#F3F4F6", bounds.x, bounds.y, bounds.width, bounds.height);
             return;
           }
 
           if (element instanceof HTMLVideoElement && (element.readyState < 2 || !element.videoWidth)) {
-            drawFill(ctx, "#0F172A", bounds.x, bounds.y, bounds.width, bounds.height);
+            drawFill(ctx, "#F3F4F6", bounds.x, bounds.y, bounds.width, bounds.height);
             return;
           }
 
           const drawn = await drawAsset(ctx, element, layer, bounds.x, bounds.y, bounds.width, bounds.height);
           if (!drawn) {
-            drawFill(ctx, "#0F172A", bounds.x, bounds.y, bounds.width, bounds.height);
+            drawFill(ctx, "#F3F4F6", bounds.x, bounds.y, bounds.width, bounds.height);
           }
         } finally {
           ctx.restore();

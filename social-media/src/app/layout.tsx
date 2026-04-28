@@ -1,15 +1,11 @@
 import type { Metadata } from "next";
-import { Inter, Space_Grotesk } from "next/font/google";
+import { Roboto } from "next/font/google";
 import "./globals.css";
 
-const display = Space_Grotesk({
+const sans = Roboto({
   subsets: ["latin"],
-  variable: "--font-display",
-});
-
-const body = Inter({
-  subsets: ["latin"],
-  variable: "--font-body",
+  weight: ["400", "500", "700", "900"],
+  variable: "--font-sans",
 });
 
 export const metadata: Metadata = {
@@ -19,7 +15,7 @@ export const metadata: Metadata = {
 
 export default function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {
   return (
-    <html lang="pt-BR" className={`${display.variable} ${body.variable}`}>
+    <html lang="pt-BR" className={sans.variable}>
       <body>{children}</body>
     </html>
   );

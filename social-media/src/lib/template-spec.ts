@@ -29,6 +29,8 @@ export const ASPECT_SIZES: Record<AspectRatioKey, { width: number; height: numbe
   "16:9": { width: 1920, height: 1080 },
 };
 
+export const STANDARD_ASPECT_RATIOS: AspectRatioKey[] = ["1:1", "4:5", "16:9", "9:16"];
+
 export type LayerKind = "background" | "image" | "video" | "text" | "shape";
 export type TransitionKind = "none" | "fade" | "slide-up" | "slide-left";
 export type MediaFit = "cover" | "contain";
@@ -117,17 +119,17 @@ export function createLayer(kind: LayerKind, index: number): TemplateLayer {
     exitAt: 0,
     transition: "fade" as TransitionKind,
     opacity: 1,
-    fill: "#111827",
+    fill: "#FFFFFF",
     radius: 28,
     editable: true,
     locked: false,
     mediaFit: "cover" as MediaFit,
     textPlaceholder: "Digite o texto aqui",
-    fontFamily: "Inter, sans-serif",
+    fontFamily: "Roboto, sans-serif",
     fontSize: 58,
     fontWeight: 700,
     lineHeight: 1.08,
-    color: "#F8FAFC",
+    color: "#111111",
     align: "left" as TextAlign,
     maxLines: 3,
   };
@@ -146,6 +148,7 @@ export function createLayer(kind: LayerKind, index: number): TemplateLayer {
       fontSize: 64,
       maxLines: 3,
       align: "left",
+      color: "#111111",
     },
     shape: {
       name: "Shape",
@@ -154,7 +157,7 @@ export function createLayer(kind: LayerKind, index: number): TemplateLayer {
       y: 8,
       width: 22,
       height: 10,
-      fill: "#0F172A",
+      fill: "#F05841",
       radius: 999,
     },
   };
@@ -188,13 +191,13 @@ export function createTemplate(
         aspectRatio,
         width: size.width,
         height: size.height,
-        backgroundColor: "#0B1020",
+        backgroundColor: "#FFFFFF",
         layers: [
           {
             ...createLayer("background", 0),
             name: "Base editorial",
             kind: "shape",
-            fill: "linear-gradient(135deg, #0B1020 0%, #111827 52%, #18223D 100%)",
+            fill: "#FFFFFF",
             editable: false,
           },
           {
@@ -204,7 +207,7 @@ export function createTemplate(
             y: 6,
             width: 26,
             height: 9,
-            fill: "#F97316",
+            fill: "#F05841",
           },
           {
             ...createLayer("text", 2),
@@ -216,6 +219,7 @@ export function createTemplate(
             fontSize: 82,
             maxLines: 3,
             textPlaceholder: "Título da chamada",
+            color: "#111111",
           },
           {
             ...createLayer("text", 3),
@@ -226,7 +230,7 @@ export function createTemplate(
             height: 12,
             fontSize: 34,
             fontWeight: 500,
-            color: "#CBD5E1",
+            color: "#70757F",
             maxLines: 2,
             textPlaceholder: "Resumo curto para contextualizar a peça",
           },
@@ -245,13 +249,47 @@ export function createTemplate(
   };
 }
 
+export function createStandardVariantSet(baseVariant: TemplateVariant) {
+  const variants: TemplateVariant[] = [baseVariant];
+  for (const ratio of STANDARD_ASPECT_RATIOS) {
+    if (ratio === baseVariant.aspectRatio) {
+      continue;
+    }
+    variants.push(cloneVariant(baseVariant, ratio));
+  }
+  return variants;
+}
+
+export function ensureStandardVariants(template: TemplateSpec) {
+  const baseVariant = template.variants[0];
+  if (!baseVariant) {
+    return template;
+  }
+
+  const variantsByRatio = new Map(template.variants.map((variant) => [variant.aspectRatio, variant] as const));
+  const standardVariants = STANDARD_ASPECT_RATIOS.map((ratio) => {
+    const existing = variantsByRatio.get(ratio);
+    if (existing) {
+      return existing;
+    }
+    return cloneVariant(baseVariant, ratio);
+  });
+
+  return {
+    ...template,
+    variants: standardVariants,
+  };
+}
+
 export function createStarterTemplates() {
   return TEMPLATE_CATEGORIES.map((category) =>
-    createTemplate(
-      category.label,
-      category.tagline,
-      "16:9",
-      category.id,
+    ensureStandardVariants(
+      createTemplate(
+        category.label,
+        category.tagline,
+        "16:9",
+        category.id,
+      ),
     ),
   );
 }

@@ -6,6 +6,7 @@ import { JournalistPanel } from "@/components/journalist-panel";
 import {
   TEMPLATE_CATEGORIES,
   createStarterTemplates,
+  ensureStandardVariants,
   type TemplateCategoryId,
   type TemplateSpec,
 } from "@/lib/template-spec";
@@ -17,10 +18,12 @@ const TEMPLATES_KEY = "rede-studio.templates";
 type Role = "designer" | "journalist";
 
 function normalizeTemplates(templates: TemplateSpec[]): TemplateSpec[] {
-  return templates.map((template) => ({
-    ...template,
-    categoryId: template.categoryId ?? "mkt",
-  }));
+  return templates.map((template) =>
+    ensureStandardVariants({
+      ...template,
+      categoryId: template.categoryId ?? "mkt",
+    }),
+  );
 }
 
 function initialTemplates() {

@@ -8,6 +8,7 @@ import {
   createId,
   createLayer,
   createTemplate,
+  ensureStandardVariants,
   type TemplateLayer,
   type TemplateSpec,
   type TemplateVariant,
@@ -152,12 +153,12 @@ export function DesignerPanel({
   }
 
   function createNewTemplate() {
-    const created = createTemplate(
+    const created = ensureStandardVariants(createTemplate(
       `${categoryLabel(selectedTemplate.categoryId)} ${templates.length + 1}`,
       categoryTag(selectedTemplate.categoryId),
       "16:9",
       selectedTemplate.categoryId,
-    );
+    ));
 
     const next = [created, ...templates];
     persist(next);

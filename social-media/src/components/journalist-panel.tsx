@@ -43,12 +43,13 @@ export function JournalistPanel({
   );
 
   const selectedTheme = TEMPLATE_CATEGORIES.find((theme) => theme.id === selectedThemeId) ?? TEMPLATE_CATEGORIES[0];
-  const selectedTemplate = templates.find((template) => template.id === selectedTemplateId) ?? templates[0];
+  const selectedTemplate =
+    templates.find((template) => template.id === selectedTemplateId) ?? allTemplates.find((template) => template.id === selectedTemplateId) ?? templates[0];
   const selectedVariant = selectedTemplate?.variants.find((variant) => variant.id === selectedVariantId) ?? selectedTemplate?.variants[0];
 
   useEffect(() => {
     const current = selectedTemplate ?? templates[0] ?? allTemplates[0];
-    const variant = current?.variants[0];
+    const variant = current?.variants.find((item) => item.id === selectedVariantId) ?? current?.variants[0];
     if (!variant) return;
 
     setContent((previous) => {
@@ -58,18 +59,22 @@ export function JournalistPanel({
         media: { ...base.media, ...previous.media },
       };
     });
-  }, [selectedTemplate?.id]);
+  }, [selectedTemplate?.id, selectedVariantId]);
 
   useEffect(() => {
     const currentThemeTemplates = allTemplates.filter((template) => template.categoryId === selectedThemeId);
     const preferred = currentThemeTemplates[0] ?? allTemplates[0];
     if (!preferred) return;
 
+    if (currentThemeTemplates.length === 0) {
+      setSelectedThemeId(preferred.categoryId);
+    }
+
     if (!currentThemeTemplates.some((template) => template.id === selectedTemplateId)) {
       setSelectedTemplateId(preferred.id);
       setSelectedVariantId(preferred.variants[0]?.id ?? "");
     }
-  }, [allTemplates, selectedTemplateId, selectedThemeId, setSelectedTemplateId, setSelectedVariantId]);
+  }, [allTemplates, selectedTemplateId, selectedThemeId, setSelectedThemeId, setSelectedTemplateId, setSelectedVariantId]);
 
   useEffect(() => {
     const nextTemplate = templates.find((template) => template.id === selectedTemplateId) ?? templates[0];
@@ -79,7 +84,7 @@ export function JournalistPanel({
     if (nextVariant && nextVariant.id !== selectedVariantId) {
       setSelectedVariantId(nextVariant.id);
     }
-  }, [selectedTemplateId, selectedVariantId, selectedThemeId, setSelectedVariantId, templates]);
+  }, [selectedTemplateId, selectedVariantId, setSelectedVariantId, templates]);
 
   const textLayers = useMemo(
     () => selectedVariant?.layers.filter((layer) => layer.kind === "text") ?? [],
@@ -102,6 +107,7 @@ export function JournalistPanel({
     const template = templates.find((item) => item.id === templateId);
     if (!template) return;
 
+    setSelectedThemeId(template.categoryId);
     setSelectedTemplateId(template.id);
     setSelectedVariantId(template.variants[0]?.id ?? "");
   }

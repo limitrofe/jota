@@ -79,9 +79,6 @@ export default function HomePage() {
     if (variant.id !== selectedVariantId) {
       setSelectedVariantId(variant.id);
     }
-    if (role === "journalist" && selectedThemeId !== template.categoryId) {
-      setSelectedThemeId(template.categoryId);
-    }
   }, [role, selectedTemplateId, selectedThemeId, selectedVariantId, templates]);
 
   const selectedTemplate = templates.find((template) => template.id === selectedTemplateId) ?? templates[0];

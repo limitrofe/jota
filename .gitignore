@@ -5,3 +5,4 @@ tsconfig.tsbuildinfo
 social-media/node_modules/
 social-media/.next/
 social-media/*.tsbuildinfo
+node_modules

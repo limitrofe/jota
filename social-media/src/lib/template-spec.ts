@@ -1,4 +1,26 @@
 export type AspectRatioKey = "1:1" | "4:5" | "9:16" | "16:9";
+export type TemplateCategoryId =
+  | "dia_a_dia"
+  | "jurisprudencia"
+  | "economia_legal"
+  | "podcasts"
+  | "videocasts"
+  | "mkt";
+
+export interface TemplateCategory {
+  id: TemplateCategoryId;
+  label: string;
+  tagline: string;
+}
+
+export const TEMPLATE_CATEGORIES: TemplateCategory[] = [
+  { id: "dia_a_dia", label: "Dia a dia", tagline: "Cobertura rápida, factual e social-first." },
+  { id: "jurisprudencia", label: "Jurisprudência", tagline: "Decisões, análises e peças para explicar direito." },
+  { id: "economia_legal", label: "Economia legal", tagline: "Regulação, mercado e impacto financeiro." },
+  { id: "podcasts", label: "Podcasts", tagline: "Capa, thumb e cortes com identidade editorial." },
+  { id: "videocasts", label: "Videocasts", tagline: "Aberturas e capas para formatos em vídeo." },
+  { id: "mkt", label: "Mkt", tagline: "Campanhas, lançamentos e peças de distribuição." },
+];
 
 export const ASPECT_SIZES: Record<AspectRatioKey, { width: number; height: number }> = {
   "1:1": { width: 1080, height: 1080 },
@@ -61,6 +83,7 @@ export interface TemplateSpec {
   id: string;
   name: string;
   description: string;
+  categoryId: TemplateCategoryId;
   version: number;
   createdAt: string;
   updatedAt: string;
@@ -142,13 +165,19 @@ export function createLayer(kind: LayerKind, index: number): TemplateLayer {
   } as TemplateLayer;
 }
 
-export function createTemplate(name: string, description: string, aspectRatio: AspectRatioKey = "16:9"): TemplateSpec {
+export function createTemplate(
+  name: string,
+  description: string,
+  aspectRatio: AspectRatioKey = "16:9",
+  categoryId: TemplateCategoryId = "mkt",
+): TemplateSpec {
   const size = getSizeForRatio(aspectRatio);
 
   return {
     id: createId("template"),
     name,
     description,
+    categoryId,
     version: 1,
     createdAt: new Date().toISOString(),
     updatedAt: new Date().toISOString(),
@@ -214,6 +243,17 @@ export function createTemplate(name: string, description: string, aspectRatio: A
       },
     ],
   };
+}
+
+export function createStarterTemplates() {
+  return TEMPLATE_CATEGORIES.map((category) =>
+    createTemplate(
+      category.label,
+      category.tagline,
+      "16:9",
+      category.id,
+    ),
+  );
 }
 
 export function cloneVariant(variant: TemplateVariant, aspectRatio: AspectRatioKey): TemplateVariant {

@@ -262,6 +262,7 @@ export function DesignerPanel({
                   top: `${layer.y}%`,
                   width: `${layer.width}%`,
                   height: `${layer.height}%`,
+                  zIndex: layer.zIndex + 1,
                 }}
                 onClick={() => setSelectedLayerId(layer.id)}
                 onPointerDown={(event) => {

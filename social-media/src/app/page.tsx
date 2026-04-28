@@ -7,6 +7,7 @@ import {
   TEMPLATE_CATEGORIES,
   createStarterTemplates,
   ensureStandardVariants,
+  normalizeTemplateLayout,
   type TemplateCategoryId,
   type TemplateSpec,
 } from "@/lib/template-spec";
@@ -19,10 +20,12 @@ type Role = "designer" | "journalist";
 
 function normalizeTemplates(templates: TemplateSpec[]): TemplateSpec[] {
   return templates.map((template) =>
-    ensureStandardVariants({
-      ...template,
-      categoryId: template.categoryId ?? "mkt",
-    }),
+    ensureStandardVariants(
+      normalizeTemplateLayout({
+        ...template,
+        categoryId: template.categoryId ?? "mkt",
+      }),
+    ),
   );
 }
 

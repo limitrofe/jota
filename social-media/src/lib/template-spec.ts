@@ -135,28 +135,58 @@ export function createLayer(kind: LayerKind, index: number): TemplateLayer {
   };
 
   const presets: Record<LayerKind, Partial<TemplateLayer>> = {
-    background: { name: "Cartela PNG", kind: "background", x: 0, y: 0, width: 100, height: 100, editable: false },
-    image: { name: "Slot de imagem", kind: "image", x: 56, y: 28, width: 34, height: 42 },
-    video: { name: "Slot de vídeo", kind: "video", x: 56, y: 28, width: 34, height: 42 },
+    background: {
+      name: "Cartela PNG",
+      kind: "background",
+      x: 0,
+      y: 0,
+      width: 100,
+      height: 100,
+      editable: false,
+      locked: true,
+      radius: 0,
+    },
+    image: {
+      name: "Mídia de fundo",
+      kind: "image",
+      x: 0,
+      y: 0,
+      width: 100,
+      height: 100,
+      locked: true,
+      radius: 0,
+      mediaFit: "cover",
+    },
+    video: {
+      name: "Mídia de fundo",
+      kind: "video",
+      x: 0,
+      y: 0,
+      width: 100,
+      height: 100,
+      locked: true,
+      radius: 0,
+      mediaFit: "cover",
+    },
     text: {
       name: "Título",
       kind: "text",
       x: 8,
-      y: 68,
-      width: 42,
-      height: 18,
-      fontSize: 64,
+      y: 16,
+      width: 84,
+      height: 24,
+      fontSize: 72,
       maxLines: 3,
       align: "left",
       color: "#111111",
     },
     shape: {
-      name: "Shape",
+      name: "Tarja",
       kind: "shape",
       x: 8,
-      y: 8,
-      width: 22,
-      height: 10,
+      y: 36,
+      width: 28,
+      height: 5,
       fill: "#F05841",
       radius: 999,
     },
@@ -201,47 +231,50 @@ export function createTemplate(
             editable: false,
           },
           {
-            ...createLayer("shape", 1),
-            name: "Faixa de destaque",
-            x: 6,
-            y: 6,
-            width: 26,
-            height: 9,
+            ...createLayer("image", 1),
+            name: "Mídia principal",
+            locked: true,
+            editable: false,
+            x: 0,
+            y: 0,
+            width: 100,
+            height: 100,
+            radius: 0,
+            mediaFit: "cover",
+          },
+          {
+            ...createLayer("shape", 2),
+            name: "Tarja de leitura",
+            x: 8,
+            y: 38,
+            width: 32,
+            height: 5,
             fill: "#F05841",
           },
           {
-            ...createLayer("text", 2),
+            ...createLayer("text", 3),
             name: "Título principal",
             x: 8,
-            y: 14,
-            width: 56,
-            height: 28,
+            y: 16,
+            width: 84,
+            height: 24,
             fontSize: 82,
             maxLines: 3,
             textPlaceholder: "Título da chamada",
             color: "#111111",
           },
           {
-            ...createLayer("text", 3),
+            ...createLayer("text", 4),
             name: "Linha de apoio",
             x: 8,
-            y: 44,
-            width: 44,
+            y: 50,
+            width: 54,
             height: 12,
             fontSize: 34,
             fontWeight: 500,
             color: "#70757F",
             maxLines: 2,
             textPlaceholder: "Resumo curto para contextualizar a peça",
-          },
-          {
-            ...createLayer("image", 4),
-            name: "Imagem principal",
-            x: 58,
-            y: 18,
-            width: 34,
-            height: 64,
-            mediaFit: "cover",
           },
         ],
       },
@@ -278,6 +311,72 @@ export function ensureStandardVariants(template: TemplateSpec) {
   return {
     ...template,
     variants: standardVariants,
+  };
+}
+
+export function normalizeLayerLayout(layer: TemplateLayer): TemplateLayer {
+  if (layer.kind === "image" || layer.kind === "video") {
+    return {
+      ...layer,
+      x: 0,
+      y: 0,
+      width: 100,
+      height: 100,
+      radius: 0,
+      locked: true,
+      editable: false,
+      mediaFit: "cover",
+      name: layer.name === "Slot de imagem" || layer.name === "Slot de vídeo" ? "Mídia de fundo" : layer.name,
+    };
+  }
+
+  if (layer.kind === "background") {
+    return {
+      ...layer,
+      x: 0,
+      y: 0,
+      width: 100,
+      height: 100,
+      radius: 0,
+      editable: false,
+      locked: true,
+    };
+  }
+
+  if (layer.kind === "text" && (layer.fontSize >= 64 || /t[ií]tulo|headline|principal/i.test(layer.name))) {
+    return {
+      ...layer,
+      x: Math.min(layer.x, 10),
+      y: Math.min(layer.y, 24),
+      width: Math.max(layer.width, 84),
+      height: Math.max(layer.height, 24),
+      maxLines: Math.max(layer.maxLines, 3),
+      fontSize: Math.max(48, Math.min(layer.fontSize, 84)),
+      fontFamily: layer.fontFamily || "Roboto, sans-serif",
+    };
+  }
+
+  if (layer.kind === "text") {
+    return {
+      ...layer,
+      fontFamily: layer.fontFamily || "Roboto, sans-serif",
+    };
+  }
+
+  return layer;
+}
+
+export function normalizeVariantLayout(variant: TemplateVariant): TemplateVariant {
+  return {
+    ...variant,
+    layers: variant.layers.map((layer) => normalizeLayerLayout(layer)),
+  };
+}
+
+export function normalizeTemplateLayout(template: TemplateSpec): TemplateSpec {
+  return {
+    ...template,
+    variants: template.variants.map((variant) => normalizeVariantLayout(variant)),
   };
 }
 

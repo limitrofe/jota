@@ -39,6 +39,25 @@ function wrapLines(
   const lines: string[] = [];
   const paragraphs = text.split(/\n+/g);
 
+  const pushWrappedWord = (word: string) => {
+    const characters = Array.from(word);
+    let chunk = "";
+
+    for (const character of characters) {
+      const next = `${chunk}${character}`;
+      if (chunk && ctx.measureText(next).width > maxWidth) {
+        lines.push(chunk);
+        chunk = character;
+      } else {
+        chunk = next;
+      }
+    }
+
+    if (chunk) {
+      lines.push(chunk);
+    }
+  };
+
   for (const paragraph of paragraphs) {
     const words = paragraph.trim().split(/\s+/).filter(Boolean);
 
@@ -47,17 +66,31 @@ function wrapLines(
       continue;
     }
 
-    let line = words[0]!;
-    for (let i = 1; i < words.length; i += 1) {
-      const next = `${line} ${words[i]}`;
-      if (ctx.measureText(next).width <= maxWidth) {
-        line = next;
-      } else {
-        lines.push(line);
-        line = words[i]!;
+    let line = "";
+    for (const word of words) {
+      const candidate = line ? `${line} ${word}` : word;
+
+      if (ctx.measureText(candidate).width <= maxWidth) {
+        line = candidate;
+        continue;
       }
+
+      if (line) {
+        lines.push(line);
+        line = "";
+      }
+
+      if (ctx.measureText(word).width <= maxWidth) {
+        line = word;
+        continue;
+      }
+
+      pushWrappedWord(word);
     }
-    lines.push(line);
+
+    if (line) {
+      lines.push(line);
+    }
   }
 
   if (lines.length <= maxLines) {
@@ -68,6 +101,36 @@ function wrapLines(
   const lastIndex = truncated.length - 1;
   truncated[lastIndex] = `${truncated[lastIndex]!.replace(/\.\.\.$/, "")}…`;
   return truncated;
+}
+
+function fitTextBox(
+  ctx: CanvasRenderingContext2D,
+  text: string,
+  maxWidth: number,
+  maxHeight: number,
+  maxLines: number,
+  fontFamily: string,
+  fontWeight: number,
+  preferredSize: number,
+  lineHeight: number,
+) {
+  const minFontSize = Math.max(18, Math.min(36, Math.round(preferredSize * 0.4)));
+
+  for (let fontSize = preferredSize; fontSize >= minFontSize; fontSize -= 2) {
+    ctx.font = `${fontWeight} ${fontSize}px ${fontFamily}`;
+    const lines = wrapLines(ctx, text, maxWidth, maxLines);
+    const height = lines.length * fontSize * lineHeight;
+    const widestLine = lines.reduce((currentMax, line) => Math.max(currentMax, ctx.measureText(line).width), 0);
+
+    if (widestLine <= maxWidth && height <= maxHeight) {
+      return { fontSize, lines, lineHeight: fontSize * lineHeight };
+    }
+  }
+
+  const fallbackSize = minFontSize;
+  ctx.font = `${fontWeight} ${fallbackSize}px ${fontFamily}`;
+  const lines = wrapLines(ctx, text, maxWidth, maxLines);
+  return { fontSize: fallbackSize, lines, lineHeight: fallbackSize * lineHeight };
 }
 
 function parseFill(fill: string) {
@@ -295,18 +358,29 @@ async function renderLayer(
 
     if (layer.kind === "text") {
       const text = content.texts[layer.id]?.trim() || layer.textPlaceholder;
-      const paddingX = Math.max(12, bounds.width * 0.02);
+      const paddingX = Math.max(12, bounds.width * 0.075);
       const paddingY = Math.max(10, bounds.height * 0.12);
       const innerWidth = bounds.width - paddingX * 2;
       const innerHeight = bounds.height - paddingY * 2;
 
+      const fitted = fitTextBox(
+        ctx,
+        text,
+        innerWidth,
+        innerHeight,
+        layer.maxLines,
+        layer.fontFamily,
+        layer.fontWeight,
+        layer.fontSize,
+        layer.lineHeight,
+      );
+
       ctx.fillStyle = layer.color;
       ctx.textAlign = layer.align;
       ctx.textBaseline = "top";
-      ctx.font = `${layer.fontWeight} ${layer.fontSize}px ${layer.fontFamily}`;
 
-      const lines = wrapLines(ctx, text, innerWidth, layer.maxLines);
-      const lineHeight = layer.fontSize * layer.lineHeight;
+      const lines = fitted.lines;
+      const lineHeight = fitted.lineHeight;
       let textX = bounds.x + paddingX;
       if (layer.align === "center") {
         textX = bounds.x + bounds.width / 2;

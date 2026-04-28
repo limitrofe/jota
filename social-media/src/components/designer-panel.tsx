@@ -116,7 +116,7 @@ export function DesignerPanel({
           y: 0,
           width: 100,
           height: 100,
-          zIndex: selectedVariant.layers.length + index,
+          zIndex: -1000 + index,
           asset: {
             name: file.name,
             dataUrl,

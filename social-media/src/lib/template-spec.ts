@@ -351,6 +351,7 @@ export function normalizeLayerLayout(layer: TemplateLayer): TemplateLayer {
       radius: 0,
       editable: false,
       locked: true,
+      zIndex: -1000,
     };
   }
 
@@ -395,10 +396,10 @@ export function defaultTextStyle(layer: TemplateLayer): TextStyleOverride {
   const isTitle = /t[ií]tulo|principal|headline/i.test(layer.name) || layer.maxLines >= 3;
 
   return {
-    color: layer.color,
-    backgroundEnabled: isTitle,
+    color: "#FFFFFF",
+    backgroundEnabled: true,
     backgroundColor: "#111111",
-    backgroundOpacity: isTitle ? 0.72 : 0.48,
+    backgroundOpacity: isTitle ? 0.72 : 0.58,
     backgroundRadius: isTitle ? 24 : 18,
     placement: isTitle ? "top" : "template",
   };

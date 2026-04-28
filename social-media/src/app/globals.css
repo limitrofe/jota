@@ -466,6 +466,41 @@ button {
   gap: 12px;
 }
 
+.text-editor-card {
+  display: grid;
+  gap: 14px;
+  padding: 14px;
+  border-radius: 22px;
+  border: 1px solid var(--border);
+  background: linear-gradient(180deg, #fff 0%, #fcfcfd 100%);
+}
+
+.text-style-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px;
+}
+
+.field-inline {
+  align-items: start;
+}
+
+.toggle-chip {
+  min-height: 42px;
+  border-radius: 999px;
+  border: 1px solid var(--border-strong);
+  background: #fff;
+  color: var(--text);
+  font-weight: 700;
+  padding: 0.7rem 1rem;
+}
+
+.toggle-chip.active {
+  background: var(--accent-soft);
+  border-color: rgba(240, 88, 65, 0.3);
+  color: var(--accent);
+}
+
 .field {
   display: grid;
   gap: 8px;

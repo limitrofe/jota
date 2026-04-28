@@ -35,6 +35,7 @@ export type LayerKind = "background" | "image" | "video" | "text" | "shape";
 export type TransitionKind = "none" | "fade" | "slide-up" | "slide-left";
 export type MediaFit = "cover" | "contain";
 export type TextAlign = "left" | "center" | "right";
+export type TextPlacement = "template" | "top" | "middle" | "bottom";
 
 export interface LayerAsset {
   name: string;
@@ -101,6 +102,16 @@ export interface MediaInput {
 export interface JournalContent {
   texts: Record<string, string>;
   media: Record<string, MediaInput | undefined>;
+  textStyles: Record<string, TextStyleOverride | undefined>;
+}
+
+export interface TextStyleOverride {
+  color: string;
+  backgroundEnabled: boolean;
+  backgroundColor: string;
+  backgroundOpacity: number;
+  backgroundRadius: number;
+  placement: TextPlacement;
 }
 
 export function createId(prefix: string) {
@@ -380,6 +391,19 @@ export function normalizeTemplateLayout(template: TemplateSpec): TemplateSpec {
   };
 }
 
+export function defaultTextStyle(layer: TemplateLayer): TextStyleOverride {
+  const isTitle = /t[ií]tulo|principal|headline/i.test(layer.name) || layer.maxLines >= 3;
+
+  return {
+    color: layer.color,
+    backgroundEnabled: isTitle,
+    backgroundColor: "#111111",
+    backgroundOpacity: isTitle ? 0.72 : 0.48,
+    backgroundRadius: isTitle ? 24 : 18,
+    placement: isTitle ? "top" : "template",
+  };
+}
+
 export function createStarterTemplates() {
   return TEMPLATE_CATEGORIES.map((category) =>
     ensureStandardVariants(
@@ -410,17 +434,19 @@ export function cloneVariant(variant: TemplateVariant, aspectRatio: AspectRatioK
 export function createEmptyContent(variant: TemplateVariant): JournalContent {
   const texts: Record<string, string> = {};
   const media: Record<string, MediaInput | undefined> = {};
+  const textStyles: Record<string, TextStyleOverride | undefined> = {};
 
   for (const layer of variant.layers) {
     if (layer.kind === "text") {
       texts[layer.id] = "";
+      textStyles[layer.id] = undefined;
     }
     if (layer.kind === "image" || layer.kind === "video") {
       media[layer.id] = undefined;
     }
   }
 
-  return { texts, media };
+  return { texts, media, textStyles };
 }
 
 export function layerBounds(layer: TemplateLayer, width: number, height: number) {

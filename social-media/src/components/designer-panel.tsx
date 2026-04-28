@@ -53,7 +53,7 @@ export function DesignerPanel({
 
   const selectedLayer = selectedVariant.layers.find((layer) => layer.id === selectedLayerId) ?? selectedVariant.layers[0];
   const orderedLayers = [...selectedVariant.layers].sort((a, b) => a.zIndex - b.zIndex);
-  const blankContent = { texts: {}, media: {} };
+  const blankContent = { texts: {}, media: {}, textStyles: {} };
 
   function persist(next: TemplateSpec[]) {
     setTemplates(next);

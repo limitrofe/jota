@@ -5,9 +5,12 @@ import { StageCanvas, type StageCanvasHandle } from "@/components/stage-canvas";
 import {
   TEMPLATE_CATEGORIES,
   createEmptyContent,
+  defaultTextStyle,
   type JournalContent,
   type TemplateCategoryId,
   type TemplateSpec,
+  type TextPlacement,
+  type TextStyleOverride,
 } from "@/lib/template-spec";
 
 interface JournalistPanelProps {
@@ -39,7 +42,7 @@ export function JournalistPanel({
   const [status, setStatus] = useState("Pronto para montar.");
   const initialVariant = templates[0]?.variants[0] ?? allTemplates[0]?.variants[0];
   const [content, setContent] = useState<JournalContent>(() =>
-    initialVariant ? createEmptyContent(initialVariant) : { texts: {}, media: {} },
+    initialVariant ? createEmptyContent(initialVariant) : { texts: {}, media: {}, textStyles: {} },
   );
 
   const selectedTheme = TEMPLATE_CATEGORIES.find((theme) => theme.id === selectedThemeId) ?? TEMPLATE_CATEGORIES[0];
@@ -57,6 +60,7 @@ export function JournalistPanel({
       return {
         texts: { ...base.texts, ...previous.texts },
         media: { ...base.media, ...previous.media },
+        textStyles: { ...base.textStyles, ...previous.textStyles },
       };
     });
   }, [selectedTemplate?.id, selectedVariantId]);
@@ -132,6 +136,22 @@ export function JournalistPanel({
         },
       },
     }));
+  }
+
+  function updateTextStyle(layerId: string, mutator: (current: TextStyleOverride) => TextStyleOverride) {
+    const layer = selectedVariant.layers.find((item) => item.id === layerId);
+    if (!layer) return;
+
+    setContent((current) => {
+      const base = current.textStyles[layerId] ?? defaultTextStyle(layer);
+      return {
+        ...current,
+        textStyles: {
+          ...current.textStyles,
+          [layerId]: mutator(base),
+        },
+      };
+    });
   }
 
   async function exportImage() {
@@ -231,20 +251,108 @@ export function JournalistPanel({
 
           <div className="stack compact">
             {textLayers.map((layer) => (
-              <label key={layer.id} className="field">
-                <span>{layer.name}</span>
-                <textarea
-                  rows={4}
-                  value={content.texts[layer.id] ?? ""}
-                  placeholder={layer.textPlaceholder}
-                  onChange={(event) =>
-                    setContent((current) => ({
-                      ...current,
-                      texts: { ...current.texts, [layer.id]: event.target.value },
-                    }))
-                  }
-                />
-              </label>
+              <div key={layer.id} className="text-editor-card">
+                <label className="field">
+                  <span>{layer.name}</span>
+                  <textarea
+                    rows={4}
+                    value={content.texts[layer.id] ?? ""}
+                    placeholder={layer.textPlaceholder}
+                    onChange={(event) =>
+                      setContent((current) => ({
+                        ...current,
+                        texts: { ...current.texts, [layer.id]: event.target.value },
+                      }))
+                    }
+                  />
+                </label>
+
+                {(() => {
+                  const style = content.textStyles[layer.id] ?? defaultTextStyle(layer);
+                  return (
+                    <div className="text-style-grid">
+                      <label className="field">
+                        <span>Cor</span>
+                        <input
+                          type="color"
+                          value={style.color}
+                          onChange={(event) =>
+                            updateTextStyle(layer.id, (current) => ({
+                              ...current,
+                              color: event.target.value,
+                            }))
+                          }
+                        />
+                      </label>
+
+                      <label className="field">
+                        <span>Posição</span>
+                        <select
+                          value={style.placement}
+                          onChange={(event) =>
+                            updateTextStyle(layer.id, (current) => ({
+                              ...current,
+                              placement: event.target.value as TextPlacement,
+                            }))
+                          }
+                        >
+                          <option value="template">Padrão</option>
+                          <option value="top">Topo</option>
+                          <option value="middle">Meio</option>
+                          <option value="bottom">Base</option>
+                        </select>
+                      </label>
+
+                      <label className="field field-inline">
+                        <span>Tarja</span>
+                        <button
+                          type="button"
+                          className={`toggle-chip ${style.backgroundEnabled ? "active" : ""}`}
+                          onClick={() =>
+                            updateTextStyle(layer.id, (current) => ({
+                              ...current,
+                              backgroundEnabled: !current.backgroundEnabled,
+                            }))
+                          }
+                        >
+                          {style.backgroundEnabled ? "Ligada" : "Desligada"}
+                        </button>
+                      </label>
+
+                      <label className="field">
+                        <span>Tarja cor</span>
+                        <input
+                          type="color"
+                          value={style.backgroundColor}
+                          onChange={(event) =>
+                            updateTextStyle(layer.id, (current) => ({
+                              ...current,
+                              backgroundColor: event.target.value,
+                            }))
+                          }
+                        />
+                      </label>
+
+                      <label className="field">
+                        <span>Opacidade</span>
+                        <input
+                          type="range"
+                          min="0.15"
+                          max="0.9"
+                          step="0.01"
+                          value={style.backgroundOpacity}
+                          onChange={(event) =>
+                            updateTextStyle(layer.id, (current) => ({
+                              ...current,
+                              backgroundOpacity: Number(event.target.value),
+                            }))
+                          }
+                        />
+                      </label>
+                    </div>
+                  );
+                })()}
+              </div>
             ))}
           </div>
 

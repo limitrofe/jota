@@ -4,7 +4,7 @@ import type {
   TemplateVariant,
   MediaFit,
 } from "@/lib/template-spec";
-import { fitRect, layerBounds } from "@/lib/template-spec";
+import { defaultTextStyle, fitRect, layerBounds } from "@/lib/template-spec";
 
 type MediaMap = Map<string, HTMLImageElement | HTMLVideoElement>;
 
@@ -131,6 +131,19 @@ function fitTextBox(
   ctx.font = `${fontWeight} ${fallbackSize}px ${fontFamily}`;
   const lines = wrapLines(ctx, text, maxWidth, maxLines);
   return { fontSize: fallbackSize, lines, lineHeight: fallbackSize * lineHeight };
+}
+
+function placementToY(boundsY: number, boundsHeight: number, placement: string, fallbackY: number) {
+  if (placement === "top") {
+    return boundsY + boundsHeight * 0.08;
+  }
+  if (placement === "middle") {
+    return boundsY + boundsHeight * 0.38;
+  }
+  if (placement === "bottom") {
+    return boundsY + boundsHeight * 0.68;
+  }
+  return fallbackY;
 }
 
 function parseFill(fill: string) {
@@ -358,10 +371,13 @@ async function renderLayer(
 
     if (layer.kind === "text") {
       const text = content.texts[layer.id]?.trim() || layer.textPlaceholder;
-      const paddingX = Math.max(12, bounds.width * 0.075);
-      const paddingY = Math.max(10, bounds.height * 0.12);
-      const innerWidth = bounds.width - paddingX * 2;
+      const style = content.textStyles[layer.id] ?? defaultTextStyle(layer);
+      const paddingX = Math.max(16, bounds.width * 0.08);
+      const paddingY = Math.max(12, bounds.height * 0.1);
+      const usableWidth = bounds.width * 0.85;
+      const innerWidth = Math.min(bounds.width - paddingX * 2, usableWidth);
       const innerHeight = bounds.height - paddingY * 2;
+      const positionY = placementToY(bounds.y, bounds.height, style.placement, bounds.y + paddingY);
 
       const fitted = fitTextBox(
         ctx,
@@ -375,25 +391,39 @@ async function renderLayer(
         layer.lineHeight,
       );
 
-      ctx.fillStyle = layer.color;
+      const maxLineWidth = fitted.lines.reduce((currentMax, line) => Math.max(currentMax, ctx.measureText(line).width), 0);
+      const boxWidth = Math.min(innerWidth, Math.max(maxLineWidth + paddingX * 2, innerWidth * 0.7));
+      const blockHeight = fitted.lines.length * fitted.lineHeight + paddingY * 2;
+      const boxX = layer.align === "center"
+        ? bounds.x + (bounds.width - boxWidth) / 2
+        : layer.align === "right"
+          ? bounds.x + bounds.width - boxWidth - paddingX
+          : bounds.x + paddingX;
+      const boxY = Math.max(bounds.y + paddingY, positionY);
+      const textX = layer.align === "center"
+        ? boxX + boxWidth / 2
+        : layer.align === "right"
+          ? boxX + boxWidth - paddingX
+          : boxX + paddingX;
+
+      if (style.backgroundEnabled) {
+        ctx.save();
+        ctx.globalAlpha *= style.backgroundOpacity;
+        ctx.fillStyle = style.backgroundColor;
+        drawRoundedRect(ctx, boxX, boxY, boxWidth, blockHeight, style.backgroundRadius);
+        ctx.fill();
+        ctx.restore();
+      }
+
+      ctx.fillStyle = style.color || layer.color;
       ctx.textAlign = layer.align;
       ctx.textBaseline = "top";
 
       const lines = fitted.lines;
       const lineHeight = fitted.lineHeight;
-      let textX = bounds.x + paddingX;
-      if (layer.align === "center") {
-        textX = bounds.x + bounds.width / 2;
-      }
-      if (layer.align === "right") {
-        textX = bounds.x + bounds.width - paddingX;
-      }
 
       const totalHeight = lines.length * lineHeight;
-      let textY = bounds.y + paddingY;
-      if (totalHeight < innerHeight) {
-        textY = bounds.y + paddingY + (innerHeight - totalHeight) * 0.15;
-      }
+      const textY = Math.max(boxY + paddingY, boxY + (blockHeight - totalHeight) / 2);
 
       for (let index = 0; index < lines.length; index += 1) {
         ctx.fillText(lines[index]!, textX, textY + lineHeight * index);

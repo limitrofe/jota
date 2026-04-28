@@ -1,10 +1,10 @@
 import type {
-  JournalContent,
+  ContentBundle,
   TemplateLayer,
   TemplateVariant,
   MediaFit,
 } from "@/lib/template-spec";
-import { defaultTextStyle, fitRect, layerBounds } from "@/lib/template-spec";
+import { defaultTextStyle, fitRect, getLayerContentKey, layerBounds } from "@/lib/template-spec";
 
 type MediaMap = Map<string, HTMLImageElement | HTMLVideoElement>;
 
@@ -259,7 +259,7 @@ async function renderLayer(
   layer: TemplateLayer,
   variantWidth: number,
   variantHeight: number,
-  content: JournalContent,
+  content: ContentBundle,
   mediaCache: MediaMap,
   elapsedSeconds: number,
 ) {
@@ -310,7 +310,8 @@ async function renderLayer(
     }
 
     if (layer.kind === "image" || layer.kind === "video") {
-      const source = content.media[layer.id];
+      const key = getLayerContentKey(layer);
+      const source = content.media[key];
       const resolvedSource = source?.src ?? layer.asset?.dataUrl;
       if (!resolvedSource) {
         drawRoundedRect(ctx, bounds.x, bounds.y, bounds.width, bounds.height, layer.radius);
@@ -370,8 +371,9 @@ async function renderLayer(
     }
 
     if (layer.kind === "text") {
-      const text = content.texts[layer.id]?.trim() || layer.textPlaceholder;
-      const style = content.textStyles[layer.id] ?? defaultTextStyle(layer);
+      const key = getLayerContentKey(layer);
+      const text = content.texts[key]?.trim() || layer.textPlaceholder;
+      const style = content.textStyles[key] ?? defaultTextStyle(layer);
       const paddingX = Math.max(16, bounds.width * 0.08);
       const paddingY = Math.max(12, bounds.height * 0.1);
       const usableWidth = bounds.width * 0.85;
@@ -437,7 +439,7 @@ async function renderLayer(
 export async function renderTemplateFrame(
   ctx: CanvasRenderingContext2D,
   variant: TemplateVariant,
-  content: JournalContent,
+  content: ContentBundle,
   mediaCache: MediaMap,
   elapsedSeconds = 0,
 ) {

@@ -3,9 +3,13 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { StageCanvas, type StageCanvasHandle } from "@/components/stage-canvas";
 import {
+  createEmptyBundle,
   TEMPLATE_CATEGORIES,
   createEmptyContent,
   defaultTextStyle,
+  getLayerContentKey,
+  resolveVariantContent,
+  type ContentBundle,
   type JournalContent,
   type TemplateCategoryId,
   type TemplateSpec,
@@ -40,15 +44,16 @@ export function JournalistPanel({
 }: JournalistPanelProps) {
   const stageRef = useRef<StageCanvasHandle | null>(null);
   const [status, setStatus] = useState("Pronto para montar.");
+  const [editScope, setEditScope] = useState<"all" | "variant">("all");
   const initialVariant = templates[0]?.variants[0] ?? allTemplates[0]?.variants[0];
   const [content, setContent] = useState<JournalContent>(() =>
-    initialVariant ? createEmptyContent(initialVariant) : { texts: {}, media: {}, textStyles: {} },
+    initialVariant ? createEmptyContent(initialVariant) : { texts: {}, media: {}, textStyles: {}, variants: {} },
   );
 
   const selectedTheme = TEMPLATE_CATEGORIES.find((theme) => theme.id === selectedThemeId) ?? TEMPLATE_CATEGORIES[0];
   const selectedTemplate =
     templates.find((template) => template.id === selectedTemplateId) ?? allTemplates.find((template) => template.id === selectedTemplateId) ?? templates[0];
-  const selectedVariant = selectedTemplate?.variants.find((variant) => variant.id === selectedVariantId) ?? selectedTemplate?.variants[0];
+  const activeVariant = selectedTemplate?.variants.find((variant) => variant.id === selectedVariantId) ?? selectedTemplate?.variants[0];
 
   useEffect(() => {
     const current = selectedTemplate ?? templates[0] ?? allTemplates[0];
@@ -57,10 +62,19 @@ export function JournalistPanel({
 
     setContent((previous) => {
       const base = createEmptyContent(variant);
+      const existingVariant = previous.variants[variant.id] ?? createEmptyBundle(variant);
       return {
         texts: { ...base.texts, ...previous.texts },
         media: { ...base.media, ...previous.media },
         textStyles: { ...base.textStyles, ...previous.textStyles },
+        variants: {
+          ...previous.variants,
+          [variant.id]: {
+            texts: { ...base.texts, ...existingVariant.texts },
+            media: { ...base.media, ...existingVariant.media },
+            textStyles: { ...base.textStyles, ...existingVariant.textStyles },
+          },
+        },
       };
     });
   }, [selectedTemplate?.id, selectedVariantId]);
@@ -91,20 +105,65 @@ export function JournalistPanel({
   }, [selectedTemplateId, selectedVariantId, setSelectedVariantId, templates]);
 
   const textLayers = useMemo(
-    () => selectedVariant?.layers.filter((layer) => layer.kind === "text") ?? [],
-    [selectedVariant],
+    () => activeVariant?.layers.filter((layer) => layer.kind === "text") ?? [],
+    [activeVariant],
   );
   const mediaLayers = useMemo(
-    () => selectedVariant?.layers.filter((layer) => layer.kind === "image" || layer.kind === "video") ?? [],
-    [selectedVariant],
+    () => activeVariant?.layers.filter((layer) => layer.kind === "image" || layer.kind === "video") ?? [],
+    [activeVariant],
+  );
+  const activeContent = useMemo(
+    () => (activeVariant ? resolveVariantContent(content, activeVariant) : { texts: {}, media: {}, textStyles: {} }),
+    [activeVariant, content],
+  );
+  const variantPreviews = useMemo(
+    () => selectedTemplate?.variants.map((variant) => ({
+      variant,
+      content: resolveVariantContent(content, variant),
+    })) ?? [],
+    [content, selectedTemplate?.variants],
   );
 
-  if (!selectedTemplate || !selectedVariant) {
+  if (!selectedTemplate || !activeVariant) {
     return null;
   }
 
   function persistStatus(next: string) {
     setStatus(next);
+  }
+
+  function getEditingBundle() {
+    if (editScope === "all") {
+      return content;
+    }
+
+    return content.variants[activeVariant.id] ?? resolveVariantContent(content, activeVariant);
+  }
+
+  function updateEditingBundle(mutator: (bundle: ContentBundle) => ContentBundle) {
+    if (editScope === "all") {
+      setContent((current) => {
+        const next = mutator(current);
+        return {
+          ...current,
+          texts: next.texts,
+          media: next.media,
+          textStyles: next.textStyles,
+        };
+      });
+      return;
+    }
+
+    setContent((current) => {
+      const currentBundle = current.variants[activeVariant.id] ?? resolveVariantContent(current, activeVariant);
+      return {
+        ...current,
+        variants: {
+          ...current.variants,
+          [activeVariant.id]: mutator(currentBundle),
+        },
+      };
+    });
   }
 
   function setTemplate(templateId: string) {
@@ -114,22 +173,25 @@ export function JournalistPanel({
     setSelectedThemeId(template.categoryId);
     setSelectedTemplateId(template.id);
     setSelectedVariantId(template.variants[0]?.id ?? "");
+    setEditScope("all");
   }
 
-  function updateMedia(layerId: string, file: File | null, kind: "image" | "video") {
+  function updateMedia(layer: (typeof activeVariant.layers)[number], file: File | null, kind: "image" | "video") {
+    const key = getLayerContentKey(layer);
+
     if (!file) {
-      setContent((current) => ({
-        ...current,
-        media: { ...current.media, [layerId]: undefined },
+      updateEditingBundle((bundle) => ({
+        ...bundle,
+        media: { ...bundle.media, [key]: undefined },
       }));
       return;
     }
 
-    setContent((current) => ({
-      ...current,
+    updateEditingBundle((bundle) => ({
+      ...bundle,
       media: {
-        ...current.media,
-        [layerId]: {
+        ...bundle.media,
+        [key]: {
           kind,
           src: URL.createObjectURL(file),
           name: file.name,
@@ -138,20 +200,17 @@ export function JournalistPanel({
     }));
   }
 
-  function updateTextStyle(layerId: string, mutator: (current: TextStyleOverride) => TextStyleOverride) {
-    const layer = selectedVariant.layers.find((item) => item.id === layerId);
-    if (!layer) return;
+  function updateTextStyle(layer: (typeof activeVariant.layers)[number], mutator: (current: TextStyleOverride) => TextStyleOverride) {
+    const key = getLayerContentKey(layer);
+    const base = getEditingBundle().textStyles[key] ?? defaultTextStyle(layer);
 
-    setContent((current) => {
-      const base = current.textStyles[layerId] ?? defaultTextStyle(layer);
-      return {
-        ...current,
-        textStyles: {
-          ...current.textStyles,
-          [layerId]: mutator(base),
-        },
-      };
-    });
+    updateEditingBundle((bundle) => ({
+      ...bundle,
+      textStyles: {
+        ...bundle.textStyles,
+        [key]: mutator(base),
+      },
+    }));
   }
 
   async function exportImage() {
@@ -174,6 +233,8 @@ export function JournalistPanel({
     download(url, `${selectedTemplate.name}.${extension}`);
     persistStatus(extension === "mp4" ? "MP4 pronto." : "Exportado em WebM.");
   }
+
+  const editingBundle = getEditingBundle();
 
   return (
     <section className="studio-grid journalist-grid">
@@ -221,11 +282,27 @@ export function JournalistPanel({
             <p className="eyebrow">Montagem</p>
             <h2>{selectedTemplate.name}</h2>
             <p className="canvas-subtitle">
-              {selectedTheme.label} · {selectedVariant.aspectRatio}
+              {selectedTheme.label} · {activeVariant.aspectRatio}
             </p>
           </div>
 
-          <div className="inline-actions">
+          <div className="inline-actions wrap">
+            <div className="scope-switch">
+              <button
+                type="button"
+                className={`toggle-chip ${editScope === "all" ? "active" : ""}`}
+                onClick={() => setEditScope("all")}
+              >
+                Todos os formatos
+              </button>
+              <button
+                type="button"
+                className={`toggle-chip ${editScope === "variant" ? "active" : ""}`}
+                onClick={() => setEditScope("variant")}
+              >
+                Formato ativo
+              </button>
+            </div>
             <button className="accent-button" onClick={() => void exportImage()}>
               Exportar JPG
             </button>
@@ -236,7 +313,26 @@ export function JournalistPanel({
         </div>
 
         <div className="canvas-shell">
-          <StageCanvas ref={stageRef} variant={selectedVariant} content={content} className="studio-canvas" live />
+          <StageCanvas ref={stageRef} variant={activeVariant} content={activeContent} className="studio-canvas" live />
+        </div>
+
+        <div className="variant-strip">
+          {variantPreviews.map(({ variant, content: previewContent }) => (
+            <button
+              key={variant.id}
+              type="button"
+              className={`variant-preview-card ${variant.id === activeVariant.id ? "active" : ""}`}
+              onClick={() => setSelectedVariantId(variant.id)}
+            >
+              <div className="variant-preview-canvas-shell">
+                <StageCanvas variant={variant} content={previewContent} className="variant-preview-canvas" live={false} />
+              </div>
+              <div className="variant-preview-meta">
+                <strong>{variant.aspectRatio}</strong>
+                <span>{variant.width} × {variant.height}</span>
+              </div>
+            </button>
+          ))}
         </div>
       </section>
 
@@ -245,9 +341,15 @@ export function JournalistPanel({
           <div className="rail-head">
             <div>
               <p className="eyebrow">Conteúdo</p>
-              <h2>Preencha os campos</h2>
+              <h2>{editScope === "all" ? "Preencha a base" : `Ajuste ${activeVariant.aspectRatio}`}</h2>
             </div>
           </div>
+
+          <p className="subtle-note compact">
+            {editScope === "all"
+              ? "O que você digita aqui vai para todos os formatos."
+              : "O que você digita aqui vale só para o formato ativo."}
+          </p>
 
           <div className="stack compact">
             {textLayers.map((layer) => (
@@ -256,19 +358,20 @@ export function JournalistPanel({
                   <span>{layer.name}</span>
                   <textarea
                     rows={4}
-                    value={content.texts[layer.id] ?? ""}
+                    value={editingBundle.texts[getLayerContentKey(layer)] ?? ""}
                     placeholder={layer.textPlaceholder}
                     onChange={(event) =>
-                      setContent((current) => ({
-                        ...current,
-                        texts: { ...current.texts, [layer.id]: event.target.value },
+                      updateEditingBundle((bundle) => ({
+                        ...bundle,
+                        texts: { ...bundle.texts, [getLayerContentKey(layer)]: event.target.value },
                       }))
                     }
                   />
                 </label>
 
                 {(() => {
-                  const style = content.textStyles[layer.id] ?? defaultTextStyle(layer);
+                  const key = getLayerContentKey(layer);
+                  const style = editingBundle.textStyles[key] ?? defaultTextStyle(layer);
                   return (
                     <div className="text-style-grid">
                       <label className="field">
@@ -277,7 +380,7 @@ export function JournalistPanel({
                           type="color"
                           value={style.color}
                           onChange={(event) =>
-                            updateTextStyle(layer.id, (current) => ({
+                            updateTextStyle(layer, (current) => ({
                               ...current,
                               color: event.target.value,
                             }))
@@ -290,7 +393,7 @@ export function JournalistPanel({
                         <select
                           value={style.placement}
                           onChange={(event) =>
-                            updateTextStyle(layer.id, (current) => ({
+                            updateTextStyle(layer, (current) => ({
                               ...current,
                               placement: event.target.value as TextPlacement,
                             }))
@@ -309,7 +412,7 @@ export function JournalistPanel({
                           type="button"
                           className={`toggle-chip ${style.backgroundEnabled ? "active" : ""}`}
                           onClick={() =>
-                            updateTextStyle(layer.id, (current) => ({
+                            updateTextStyle(layer, (current) => ({
                               ...current,
                               backgroundEnabled: !current.backgroundEnabled,
                             }))
@@ -325,7 +428,7 @@ export function JournalistPanel({
                           type="color"
                           value={style.backgroundColor}
                           onChange={(event) =>
-                            updateTextStyle(layer.id, (current) => ({
+                            updateTextStyle(layer, (current) => ({
                               ...current,
                               backgroundColor: event.target.value,
                             }))
@@ -342,7 +445,7 @@ export function JournalistPanel({
                           step="0.01"
                           value={style.backgroundOpacity}
                           onChange={(event) =>
-                            updateTextStyle(layer.id, (current) => ({
+                            updateTextStyle(layer, (current) => ({
                               ...current,
                               backgroundOpacity: Number(event.target.value),
                             }))
@@ -363,7 +466,7 @@ export function JournalistPanel({
                 <input
                   type="file"
                   accept={layer.kind === "video" ? "video/*" : "image/*"}
-                  onChange={(event) => updateMedia(layer.id, event.target.files?.[0] ?? null, layer.kind === "video" ? "video" : "image")}
+                  onChange={(event) => updateMedia(layer, event.target.files?.[0] ?? null, layer.kind === "video" ? "video" : "image")}
                 />
               </label>
             ))}
@@ -373,7 +476,7 @@ export function JournalistPanel({
         <div className="inspector-card soft">
           <p className="eyebrow">Slots</p>
           <div className="layer-stack">
-            {[...selectedVariant.layers]
+            {[...activeVariant.layers]
               .sort((a, b) => a.zIndex - b.zIndex)
               .map((layer) => (
                 <div key={layer.id} className="mini-row readonly">

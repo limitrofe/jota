@@ -1,7 +1,7 @@
 "use client";
 
 import { forwardRef, useEffect, useImperativeHandle, useRef } from "react";
-import type { JournalContent, TemplateVariant } from "@/lib/template-spec";
+import type { ContentBundle, TemplateVariant } from "@/lib/template-spec";
 import { renderTemplateFrame } from "@/lib/render-canvas";
 
 export interface StageCanvasHandle {
@@ -11,7 +11,7 @@ export interface StageCanvasHandle {
 
 interface StageCanvasProps {
   variant: TemplateVariant;
-  content: JournalContent;
+  content: ContentBundle;
   className?: string;
   live?: boolean;
   onRenderTick?: (seconds: number) => void;

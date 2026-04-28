@@ -45,6 +45,7 @@ export interface LayerAsset {
 
 export interface TemplateLayer {
   id: string;
+  slotId: string;
   name: string;
   kind: LayerKind;
   x: number;
@@ -99,10 +100,14 @@ export interface MediaInput {
   name: string;
 }
 
-export interface JournalContent {
+export interface ContentBundle {
   texts: Record<string, string>;
   media: Record<string, MediaInput | undefined>;
   textStyles: Record<string, TextStyleOverride | undefined>;
+}
+
+export interface JournalContent extends ContentBundle {
+  variants: Record<string, ContentBundle | undefined>;
 }
 
 export interface TextStyleOverride {
@@ -125,6 +130,7 @@ export function getSizeForRatio(aspectRatio: AspectRatioKey) {
 export function createLayer(kind: LayerKind, index: number): TemplateLayer {
   const common = {
     id: createId("layer"),
+    slotId: createId("slot"),
     zIndex: index,
     enterAt: 0,
     exitAt: 0,
@@ -378,17 +384,34 @@ export function normalizeLayerLayout(layer: TemplateLayer): TemplateLayer {
   return layer;
 }
 
-export function normalizeVariantLayout(variant: TemplateVariant): TemplateVariant {
+export function normalizeVariantLayout(variant: TemplateVariant, fallbackSlotIds: string[] = []): TemplateVariant {
   return {
     ...variant,
-    layers: variant.layers.map((layer) => normalizeLayerLayout(layer)),
+    layers: variant.layers.map((layer, index) => {
+      const normalized = normalizeLayerLayout(layer);
+      return {
+        ...normalized,
+        slotId: normalized.slotId ?? fallbackSlotIds[index] ?? createId("slot"),
+      };
+    }),
   };
 }
 
 export function normalizeTemplateLayout(template: TemplateSpec): TemplateSpec {
+  const firstVariant = template.variants[0];
+  if (!firstVariant) {
+    return template;
+  }
+
+  const normalizedFirstVariant = normalizeVariantLayout(firstVariant);
+  const fallbackSlotIds = normalizedFirstVariant.layers.map((layer) => layer.slotId);
+
   return {
     ...template,
-    variants: template.variants.map((variant) => normalizeVariantLayout(variant)),
+    variants: [
+      normalizedFirstVariant,
+      ...template.variants.slice(1).map((variant) => normalizeVariantLayout(variant, fallbackSlotIds)),
+    ],
   };
 }
 
@@ -428,26 +451,56 @@ export function cloneVariant(variant: TemplateVariant, aspectRatio: AspectRatioK
     aspectRatio,
     width: size.width,
     height: size.height,
-    layers: variant.layers.map((layer) => ({ ...layer, id: createId("layer") })),
+    layers: variant.layers.map((layer) => ({ ...layer, id: createId("layer"), slotId: layer.slotId ?? createId("slot") })),
   };
 }
 
-export function createEmptyContent(variant: TemplateVariant): JournalContent {
+export function createEmptyBundle(variant: TemplateVariant): ContentBundle {
   const texts: Record<string, string> = {};
   const media: Record<string, MediaInput | undefined> = {};
   const textStyles: Record<string, TextStyleOverride | undefined> = {};
 
   for (const layer of variant.layers) {
+    const key = layer.slotId ?? layer.id;
     if (layer.kind === "text") {
-      texts[layer.id] = "";
-      textStyles[layer.id] = undefined;
+      texts[key] = "";
+      textStyles[key] = undefined;
     }
     if (layer.kind === "image" || layer.kind === "video") {
-      media[layer.id] = undefined;
+      media[key] = undefined;
     }
   }
 
   return { texts, media, textStyles };
+}
+
+export function createEmptyContent(variant: TemplateVariant): JournalContent {
+  return {
+    ...createEmptyBundle(variant),
+    variants: {},
+  };
+}
+
+export function getLayerContentKey(layer: TemplateLayer) {
+  return layer.slotId ?? layer.id;
+}
+
+export function resolveVariantContent(content: JournalContent, variant: TemplateVariant): ContentBundle {
+  const override = content.variants[variant.id];
+  return {
+    texts: {
+      ...content.texts,
+      ...(override?.texts ?? {}),
+    },
+    media: {
+      ...content.media,
+      ...(override?.media ?? {}),
+    },
+    textStyles: {
+      ...content.textStyles,
+      ...(override?.textStyles ?? {}),
+    },
+  };
 }
 
 export function layerBounds(layer: TemplateLayer, width: number, height: number) {

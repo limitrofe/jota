@@ -194,136 +194,140 @@ async function renderLayer(
   }
 
   ctx.save();
-  ctx.globalAlpha *= alpha * layer.opacity;
-  ctx.translate(offsetX, offsetY);
+  try {
+    ctx.globalAlpha *= alpha * layer.opacity;
+    ctx.translate(offsetX, offsetY);
 
-  if (layer.kind === "shape" || layer.kind === "background") {
-    const resolvedSource = layer.asset?.dataUrl;
+    if (layer.kind === "shape" || layer.kind === "background") {
+      const resolvedSource = layer.asset?.dataUrl;
 
-    if (resolvedSource) {
-      let element = mediaCache.get(resolvedSource);
-      if (!element) {
-        const image = new Image();
-        image.src = resolvedSource;
-        mediaCache.set(resolvedSource, image);
-        element = image;
-      }
-
-      if (element instanceof HTMLImageElement && !element.complete) {
-        ctx.restore();
-        return;
-      }
-
-      if (layer.radius > 0) {
-        drawRoundedRect(ctx, bounds.x, bounds.y, bounds.width, bounds.height, layer.radius);
-        ctx.clip();
-      }
-
-      const drawn = await drawAsset(ctx, element, layer, bounds.x, bounds.y, bounds.width, bounds.height);
-      if (!drawn) {
-        drawFill(ctx, layer.fill, bounds.x, bounds.y, bounds.width, bounds.height);
-      }
-    } else {
-      if (layer.radius > 0) {
-        drawRoundedRect(ctx, bounds.x, bounds.y, bounds.width, bounds.height, layer.radius);
-        ctx.clip();
-      }
-      drawFill(ctx, layer.fill, bounds.x, bounds.y, bounds.width, bounds.height);
-    }
-  }
-
-  if (layer.kind === "image" || layer.kind === "video") {
-    const source = content.media[layer.id];
-    const resolvedSource = source?.src ?? layer.asset?.dataUrl;
-    if (!resolvedSource) {
-      drawRoundedRect(ctx, bounds.x, bounds.y, bounds.width, bounds.height, layer.radius);
-      ctx.fillStyle = "#1F2937";
-      ctx.fill();
-      ctx.strokeStyle = "rgba(255,255,255,0.16)";
-      ctx.lineWidth = 4;
-      ctx.stroke();
-      ctx.fillStyle = "rgba(255,255,255,0.75)";
-      ctx.font = `600 ${Math.max(20, Math.min(bounds.width, bounds.height) * 0.08)}px var(--font-body)`;
-      ctx.textAlign = "center";
-      ctx.textBaseline = "middle";
-      ctx.fillText(layer.kind === "video" ? "Vídeo" : "Imagem", bounds.x + bounds.width / 2, bounds.y + bounds.height / 2);
-    } else {
-      let element = mediaCache.get(resolvedSource);
-      if (!element) {
-        if (layer.kind === "video" || source?.kind === "video") {
-          const video = document.createElement("video");
-          video.src = resolvedSource;
-          video.muted = true;
-          video.playsInline = true;
-          video.loop = true;
-          video.preload = "auto";
-          void video.play().catch(() => undefined);
-          mediaCache.set(resolvedSource, video);
-          element = video;
-        } else {
+      if (resolvedSource) {
+        let element = mediaCache.get(resolvedSource);
+        if (!element) {
           const image = new Image();
           image.src = resolvedSource;
           mediaCache.set(resolvedSource, image);
           element = image;
         }
-      }
 
-      if (element instanceof HTMLImageElement && !element.complete) {
-        return;
-      }
+        if (layer.radius > 0) {
+          drawRoundedRect(ctx, bounds.x, bounds.y, bounds.width, bounds.height, layer.radius);
+          ctx.clip();
+        }
 
-      if (element instanceof HTMLVideoElement && (element.readyState < 2 || !element.videoWidth)) {
-        return;
-      }
+        if (element instanceof HTMLImageElement && !element.complete) {
+          drawFill(ctx, "#0F172A", bounds.x, bounds.y, bounds.width, bounds.height);
+          return;
+        }
 
-      drawRoundedRect(ctx, bounds.x, bounds.y, bounds.width, bounds.height, layer.radius);
-      ctx.save();
-      ctx.clip();
-      const drawn = await drawAsset(ctx, element, layer, bounds.x, bounds.y, bounds.width, bounds.height);
-      if (!drawn) {
-        ctx.restore();
-        ctx.fillStyle = "#0F172A";
-        ctx.fillRect(bounds.x, bounds.y, bounds.width, bounds.height);
+        const drawn = await drawAsset(ctx, element, layer, bounds.x, bounds.y, bounds.width, bounds.height);
+        if (!drawn) {
+          drawFill(ctx, layer.fill, bounds.x, bounds.y, bounds.width, bounds.height);
+        }
       } else {
-        ctx.restore();
+        if (layer.radius > 0) {
+          drawRoundedRect(ctx, bounds.x, bounds.y, bounds.width, bounds.height, layer.radius);
+          ctx.clip();
+        }
+        drawFill(ctx, layer.fill, bounds.x, bounds.y, bounds.width, bounds.height);
       }
     }
+
+    if (layer.kind === "image" || layer.kind === "video") {
+      const source = content.media[layer.id];
+      const resolvedSource = source?.src ?? layer.asset?.dataUrl;
+      if (!resolvedSource) {
+        drawRoundedRect(ctx, bounds.x, bounds.y, bounds.width, bounds.height, layer.radius);
+        ctx.fillStyle = "#1F2937";
+        ctx.fill();
+        ctx.strokeStyle = "rgba(255,255,255,0.16)";
+        ctx.lineWidth = 4;
+        ctx.stroke();
+        ctx.fillStyle = "rgba(255,255,255,0.75)";
+        ctx.font = `600 ${Math.max(20, Math.min(bounds.width, bounds.height) * 0.08)}px var(--font-body)`;
+        ctx.textAlign = "center";
+        ctx.textBaseline = "middle";
+        ctx.fillText(layer.kind === "video" ? "Vídeo" : "Imagem", bounds.x + bounds.width / 2, bounds.y + bounds.height / 2);
+      } else {
+        let element = mediaCache.get(resolvedSource);
+        if (!element) {
+          if (layer.kind === "video" || source?.kind === "video") {
+            const video = document.createElement("video");
+            video.src = resolvedSource;
+            video.muted = true;
+            video.playsInline = true;
+            video.loop = true;
+            video.preload = "auto";
+            void video.play().catch(() => undefined);
+            mediaCache.set(resolvedSource, video);
+            element = video;
+          } else {
+            const image = new Image();
+            image.src = resolvedSource;
+            mediaCache.set(resolvedSource, image);
+            element = image;
+          }
+        }
+
+        drawRoundedRect(ctx, bounds.x, bounds.y, bounds.width, bounds.height, layer.radius);
+        ctx.save();
+        ctx.clip();
+        try {
+          if (element instanceof HTMLImageElement && !element.complete) {
+            drawFill(ctx, "#0F172A", bounds.x, bounds.y, bounds.width, bounds.height);
+            return;
+          }
+
+          if (element instanceof HTMLVideoElement && (element.readyState < 2 || !element.videoWidth)) {
+            drawFill(ctx, "#0F172A", bounds.x, bounds.y, bounds.width, bounds.height);
+            return;
+          }
+
+          const drawn = await drawAsset(ctx, element, layer, bounds.x, bounds.y, bounds.width, bounds.height);
+          if (!drawn) {
+            drawFill(ctx, "#0F172A", bounds.x, bounds.y, bounds.width, bounds.height);
+          }
+        } finally {
+          ctx.restore();
+        }
+      }
+    }
+
+    if (layer.kind === "text") {
+      const text = content.texts[layer.id]?.trim() || layer.textPlaceholder;
+      const paddingX = Math.max(12, bounds.width * 0.02);
+      const paddingY = Math.max(10, bounds.height * 0.12);
+      const innerWidth = bounds.width - paddingX * 2;
+      const innerHeight = bounds.height - paddingY * 2;
+
+      ctx.fillStyle = layer.color;
+      ctx.textAlign = layer.align;
+      ctx.textBaseline = "top";
+      ctx.font = `${layer.fontWeight} ${layer.fontSize}px ${layer.fontFamily}`;
+
+      const lines = wrapLines(ctx, text, innerWidth, layer.maxLines);
+      const lineHeight = layer.fontSize * layer.lineHeight;
+      let textX = bounds.x + paddingX;
+      if (layer.align === "center") {
+        textX = bounds.x + bounds.width / 2;
+      }
+      if (layer.align === "right") {
+        textX = bounds.x + bounds.width - paddingX;
+      }
+
+      const totalHeight = lines.length * lineHeight;
+      let textY = bounds.y + paddingY;
+      if (totalHeight < innerHeight) {
+        textY = bounds.y + paddingY + (innerHeight - totalHeight) * 0.15;
+      }
+
+      for (let index = 0; index < lines.length; index += 1) {
+        ctx.fillText(lines[index]!, textX, textY + lineHeight * index);
+      }
+    }
+  } finally {
+    ctx.restore();
   }
-
-  if (layer.kind === "text") {
-    const text = content.texts[layer.id]?.trim() || layer.textPlaceholder;
-    const paddingX = Math.max(12, bounds.width * 0.02);
-    const paddingY = Math.max(10, bounds.height * 0.12);
-    const innerWidth = bounds.width - paddingX * 2;
-    const innerHeight = bounds.height - paddingY * 2;
-
-    ctx.fillStyle = layer.color;
-    ctx.textAlign = layer.align;
-    ctx.textBaseline = "top";
-    ctx.font = `${layer.fontWeight} ${layer.fontSize}px ${layer.fontFamily}`;
-
-    const lines = wrapLines(ctx, text, innerWidth, layer.maxLines);
-    const lineHeight = layer.fontSize * layer.lineHeight;
-    let textX = bounds.x + paddingX;
-    if (layer.align === "center") {
-      textX = bounds.x + bounds.width / 2;
-    }
-    if (layer.align === "right") {
-      textX = bounds.x + bounds.width - paddingX;
-    }
-
-    const totalHeight = lines.length * lineHeight;
-    let textY = bounds.y + paddingY;
-    if (totalHeight < innerHeight) {
-      textY = bounds.y + paddingY + (innerHeight - totalHeight) * 0.15;
-    }
-
-    for (let index = 0; index < lines.length; index += 1) {
-      ctx.fillText(lines[index]!, textX, textY + lineHeight * index);
-    }
-  }
-
-  ctx.restore();
 }
 
 export async function renderTemplateFrame(

@@ -152,6 +152,10 @@ export function JournalistPanel({
     () => (activeVariant ? resolveVariantContent(content, activeVariant) : { texts: {}, media: {}, textStyles: {} }),
     [activeVariant, content],
   );
+  const previewLayers = useMemo(
+    () => [...activeVariant.layers].sort((a, b) => a.zIndex - b.zIndex),
+    [activeVariant],
+  );
   const variantPreviews = useMemo(
     () => selectedTemplate?.variants.map((variant) => ({
       variant,
@@ -558,7 +562,138 @@ export function JournalistPanel({
             setSelectedMediaLayerId(targetLayer.id);
           }}
           >
-          <StageCanvas ref={stageRef} variant={activeVariant} content={activeContent} className="studio-canvas journalist-preview-canvas" live />
+          <div className="journalist-preview-frame" style={{ aspectRatio: `${activeVariant.width} / ${activeVariant.height}` }}>
+            {previewLayers.map((layer) => {
+              const key = getLayerContentKey(layer);
+
+              if (layer.kind === "shape" || layer.kind === "background") {
+                return (
+                  <div
+                    key={layer.id}
+                    className="journalist-preview-layer journalist-preview-shape"
+                    style={{
+                      left: `${layer.x}%`,
+                      top: `${layer.y}%`,
+                      width: `${layer.width}%`,
+                      height: `${layer.height}%`,
+                      zIndex: layer.zIndex + 1,
+                      background: layer.fill,
+                      borderRadius: layer.radius,
+                      opacity: layer.opacity,
+                    }}
+                  />
+                );
+              }
+
+              if (layer.kind === "image" || layer.kind === "video") {
+                const slot = activeContent.media[key];
+                const source = slot?.src ?? layer.asset?.dataUrl;
+                const position = slot?.position ?? layer.mediaPosition ?? "center";
+                const scale = Math.max(1, slot?.scale ?? layer.mediaScale ?? 1);
+                const objectPosition =
+                  position === "top"
+                    ? "center top"
+                    : position === "bottom"
+                      ? "center bottom"
+                      : position === "left"
+                        ? "left center"
+                        : position === "right"
+                          ? "right center"
+                          : "center center";
+
+                return (
+                  <div
+                    key={layer.id}
+                    className="journalist-preview-layer journalist-preview-media"
+                    style={{
+                      left: `${layer.x}%`,
+                      top: `${layer.y}%`,
+                      width: `${layer.width}%`,
+                      height: `${layer.height}%`,
+                      zIndex: layer.zIndex + 1,
+                      borderRadius: layer.radius,
+                    }}
+                  >
+                    {source ? (
+                      slot?.kind === "video" || layer.kind === "video" ? (
+                        <video
+                          src={source}
+                          muted
+                          playsInline
+                          autoPlay
+                          loop
+                          style={{ objectPosition, transform: `scale(${scale})`, transformOrigin: objectPosition }}
+                        />
+                      ) : (
+                        <img
+                          src={source}
+                          alt=""
+                          style={{ objectPosition, transform: `scale(${scale})`, transformOrigin: objectPosition }}
+                        />
+                      )
+                    ) : (
+                      <span>{layer.kind === "video" ? "Vídeo" : "Imagem"}</span>
+                    )}
+                  </div>
+                );
+              }
+
+              if (layer.kind !== "text") {
+                return null;
+              }
+
+              const style = activeContent.textStyles[key] ?? defaultTextStyle(layer);
+              const text = activeContent.texts[key]?.trim() || layer.textPlaceholder;
+              const isRight = style.placement.includes("right");
+              const isBottom = style.placement.includes("bottom");
+              const justifySelf = isRight ? "end" : "start";
+              const alignSelf = isBottom ? "end" : "start";
+
+              return (
+                <div
+                  key={layer.id}
+                  className="journalist-preview-layer journalist-preview-text"
+                  style={{
+                    left: `${layer.x}%`,
+                    top: `${layer.y}%`,
+                    width: `${layer.width}%`,
+                    height: `${layer.height}%`,
+                    zIndex: layer.zIndex + 1,
+                    justifySelf,
+                    alignSelf,
+                    justifyItems: isRight ? "end" : "start",
+                    alignContent: isBottom ? "end" : "start",
+                  }}
+                >
+                  {style.backgroundEnabled ? (
+                    <div
+                      className="journalist-preview-text-bg"
+                      style={{
+                        backgroundColor: style.backgroundColor,
+                        opacity: style.backgroundOpacity,
+                        borderRadius: style.backgroundRadius,
+                      }}
+                    />
+                  ) : null}
+                  <div
+                    className="journalist-preview-text-content"
+                    style={{
+                      color: style.backgroundEnabled ? "#FFFFFF" : "#111111",
+                      textAlign: isRight ? "right" : "left",
+                      fontFamily: layer.fontFamily,
+                      fontWeight: layer.fontWeight,
+                      lineHeight: layer.lineHeight,
+                      fontSize: `${Math.max(18, layer.fontSize * 0.45)}px`,
+                      maxWidth: "100%",
+                    }}
+                  >
+                    {text}
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+          <StageCanvas ref={stageRef} variant={activeVariant} content={activeContent} className="studio-canvas journalist-export-canvas" live />
         </div>
 
         <div className="variant-strip">

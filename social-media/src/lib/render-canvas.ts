@@ -422,7 +422,8 @@ async function renderLayer(
       const leftTextX = placement.boxX + horizontalPadding;
       const rightTextX = placement.boxX + placement.boxWidth - horizontalPadding;
 
-      ctx.fillStyle = style.color || layer.color;
+      const textColor = style.backgroundEnabled ? "#FFFFFF" : "#111111";
+      ctx.fillStyle = textColor;
       ctx.textAlign = placement.align;
       ctx.textBaseline = "top";
 

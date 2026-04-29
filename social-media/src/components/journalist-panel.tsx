@@ -50,6 +50,7 @@ export function JournalistPanel({
   const [status, setStatus] = useState("Pronto para montar.");
   const [editScope, setEditScope] = useState<"all" | "variant">("all");
   const [selectedMediaLayerId, setSelectedMediaLayerId] = useState<string | null>(null);
+  const [dropTargetLayerId, setDropTargetLayerId] = useState<string | null>(null);
   const [isDraggingMedia, setIsDraggingMedia] = useState(false);
   const mediaDropDepth = useRef(0);
   const initialVariant = templates[0]?.variants[0] ?? allTemplates[0]?.variants[0];
@@ -120,16 +121,22 @@ export function JournalistPanel({
     [activeVariant],
   );
   const selectedMediaLayer = mediaLayers.find((layer) => layer.id === selectedMediaLayerId) ?? mediaLayers[0];
+  const dropTargetLayer = mediaLayers.find((layer) => layer.id === dropTargetLayerId) ?? selectedMediaLayer ?? mediaLayers[0];
   useEffect(() => {
     if (!mediaLayers.length) {
       setSelectedMediaLayerId(null);
+      setDropTargetLayerId(null);
       return;
     }
 
     if (!selectedMediaLayerId || !mediaLayers.some((layer) => layer.id === selectedMediaLayerId)) {
       setSelectedMediaLayerId(mediaLayers[0]?.id ?? null);
     }
-  }, [mediaLayers, selectedMediaLayerId]);
+
+    if (!dropTargetLayerId || !mediaLayers.some((layer) => layer.id === dropTargetLayerId)) {
+      setDropTargetLayerId(mediaLayers[0]?.id ?? null);
+    }
+  }, [dropTargetLayerId, mediaLayers, selectedMediaLayerId]);
   const activeContent = useMemo(
     () => (activeVariant ? resolveVariantContent(content, activeVariant) : { texts: {}, media: {}, textStyles: {} }),
     [activeVariant, content],
@@ -249,9 +256,26 @@ export function JournalistPanel({
     updateMedia(layer, file, kind);
   }
 
-  function handleMediaDragEnter() {
+  function resolveMediaSlot(layer: (typeof activeVariant.layers)[number]) {
+    const key = getLayerContentKey(layer);
+    const current = getEditingBundle().media[key];
+    const source = current?.src ?? layer.asset?.dataUrl ?? "";
+
+    return {
+      current,
+      source,
+      kind: current?.kind ?? layer.kind,
+      label: current?.name ?? layer.name,
+      hasSource: Boolean(source),
+    };
+  }
+
+  function handleMediaDragEnter(layerId?: string) {
     mediaDropDepth.current += 1;
     setIsDraggingMedia(true);
+    if (layerId) {
+      setDropTargetLayerId(layerId);
+    }
   }
 
   function handleMediaDragLeave(event: { currentTarget: HTMLElement; relatedTarget: EventTarget | null }) {
@@ -261,7 +285,7 @@ export function JournalistPanel({
 
     mediaDropDepth.current = Math.max(0, mediaDropDepth.current - 1);
     if (mediaDropDepth.current === 0) {
-      setIsDraggingMedia(false);
+      clearMediaDragState();
     }
   }
 
@@ -274,6 +298,7 @@ export function JournalistPanel({
   function clearMediaDragState() {
     mediaDropDepth.current = 0;
     setIsDraggingMedia(false);
+    setDropTargetLayerId(null);
   }
 
   function updateMediaStyle(
@@ -472,19 +497,64 @@ export function JournalistPanel({
 
         <div
           className={`canvas-shell drop-target ${selectedMediaLayer ? "has-media-target" : ""} ${isDraggingMedia ? "dragging" : ""}`}
-          onDragEnter={handleMediaDragEnter}
+          onDragEnter={() => handleMediaDragEnter(selectedMediaLayer?.id ?? mediaLayers[0]?.id)}
           onDragOver={handleMediaDragOver}
           onDragLeave={handleMediaDragLeave}
           onDrop={(event) => {
             event.preventDefault();
             clearMediaDragState();
-            if (!selectedMediaLayer) return;
-            handleMediaDrop(selectedMediaLayer, event.dataTransfer.files);
+            const targetLayer = dropTargetLayer ?? selectedMediaLayer ?? mediaLayers[0];
+            if (!targetLayer) return;
+            handleMediaDrop(targetLayer, event.dataTransfer.files);
+            setSelectedMediaLayerId(targetLayer.id);
           }}
         >
+          {mediaLayers.length ? (
+            <div className="media-slot-strip">
+              {mediaLayers.map((layer) => {
+                const slot = resolveMediaSlot(layer);
+                const isActive = layer.id === (dropTargetLayer?.id ?? selectedMediaLayer?.id);
+                return (
+                  <button
+                    key={layer.id}
+                    type="button"
+                    className={`media-slot-chip ${isActive ? "active" : ""} ${slot.hasSource ? "filled" : "empty"}`}
+                    onClick={() => setSelectedMediaLayerId(layer.id)}
+                    onDragEnter={() => handleMediaDragEnter(layer.id)}
+                    onDragOver={handleMediaDragOver}
+                    onDragLeave={handleMediaDragLeave}
+                    onDrop={(event) => {
+                      event.preventDefault();
+                      clearMediaDragState();
+                      handleMediaDrop(layer, event.dataTransfer.files);
+                      setSelectedMediaLayerId(layer.id);
+                      setDropTargetLayerId(layer.id);
+                    }}
+                  >
+                    <div className="media-slot-thumb">
+                      {slot.hasSource ? (
+                        slot.kind === "video" ? (
+                          <video src={slot.source} muted playsInline autoPlay loop />
+                        ) : (
+                          <img src={slot.source} alt="" />
+                        )
+                      ) : (
+                        <span>Solte aqui</span>
+                      )}
+                    </div>
+                    <div className="media-slot-meta">
+                      <strong>{layer.name}</strong>
+                      <span>{slot.hasSource ? `${slot.kind === "video" ? "vídeo" : "imagem"}` : "vazio"}</span>
+                    </div>
+                  </button>
+                );
+              })}
+            </div>
+          ) : null}
+
           <StageCanvas ref={stageRef} variant={activeVariant} content={activeContent} className="studio-canvas" live />
           <div className={`canvas-drop-hint ${isDraggingMedia ? "visible" : ""}`}>
-            <strong>{selectedMediaLayer ? `Arraste a mídia para ${selectedMediaLayer.name}` : "Sem slot de mídia"}</strong>
+            <strong>{dropTargetLayer ? `Arraste a mídia para ${dropTargetLayer.name}` : "Sem slot de mídia"}</strong>
             <span>ou solte um arquivo aqui para preencher o fundo do post</span>
           </div>
         </div>
@@ -592,15 +662,14 @@ export function JournalistPanel({
 
           <div className="stack compact">
             {mediaLayers.map((layer) => {
-              const key = getLayerContentKey(layer);
-              const media = editingBundle.media[key];
+              const slot = resolveMediaSlot(layer);
 
               return (
                 <div
                   key={layer.id}
                   className={`text-editor-card media-editor-card ${selectedMediaLayerId === layer.id ? "active" : ""} ${isDraggingMedia ? "dragging" : ""}`}
                   onClick={() => setSelectedMediaLayerId(layer.id)}
-                  onDragEnter={handleMediaDragEnter}
+                  onDragEnter={() => handleMediaDragEnter(layer.id)}
                   onDragOver={handleMediaDragOver}
                   onDragLeave={handleMediaDragLeave}
                   onDrop={(event) => {
@@ -608,8 +677,24 @@ export function JournalistPanel({
                     clearMediaDragState();
                     handleMediaDrop(layer, event.dataTransfer.files);
                     setSelectedMediaLayerId(layer.id);
+                    setDropTargetLayerId(layer.id);
                   }}
                 >
+                  <div className={`media-preview ${slot.hasSource ? "filled" : "empty"}`}>
+                    {slot.hasSource ? (
+                      slot.kind === "video" ? (
+                        <video src={slot.source} muted playsInline autoPlay loop />
+                      ) : (
+                        <img src={slot.source} alt="" />
+                      )
+                    ) : (
+                      <div className="media-preview-placeholder">
+                        <strong>{layer.kind === "video" ? "Vídeo" : "Imagem"}</strong>
+                        <span>Arraste um arquivo ou clique para escolher</span>
+                      </div>
+                    )}
+                  </div>
+
                   <label className="field">
                     <span>{layer.name}</span>
                     <input
@@ -625,7 +710,7 @@ export function JournalistPanel({
                     <label className="field">
                       <span>Posição</span>
                       <select
-                        value={media?.position ?? "center"}
+                        value={slot.current?.position ?? "center"}
                         onChange={(event) =>
                           setMediaPosition(layer, event.target.value as MediaPosition)
                         }
@@ -645,7 +730,7 @@ export function JournalistPanel({
                         min="1"
                         max="2.5"
                         step="0.01"
-                        value={media?.scale ?? 1}
+                        value={slot.current?.scale ?? 1}
                         onChange={(event) =>
                           updateMediaStyle(layer, (current) => ({
                             ...current,

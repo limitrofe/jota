@@ -558,50 +558,7 @@ export function JournalistPanel({
             setSelectedMediaLayerId(targetLayer.id);
           }}
           >
-          {mediaLayers.length ? (
-            <div className="media-slot-strip">
-              {mediaLayers.map((layer) => {
-                const slot = resolveMediaSlot(layer);
-                const isActive = layer.id === (dropTargetLayer?.id ?? selectedMediaLayer?.id);
-                return (
-                  <button
-                    key={layer.id}
-                    type="button"
-                    className={`media-slot-chip ${isActive ? "active" : ""} ${slot.hasSource ? "filled" : "empty"}`}
-                    onClick={() => setSelectedMediaLayerId(layer.id)}
-                    onDragEnter={() => handleMediaDragEnter(layer.id)}
-                    onDragOver={handleMediaDragOver}
-                    onDragLeave={handleMediaDragLeave}
-                    onDrop={(event) => {
-                      event.preventDefault();
-                      clearMediaDragState();
-                      handleMediaDrop(layer, event.dataTransfer.files);
-                      setSelectedMediaLayerId(layer.id);
-                      setDropTargetLayerId(layer.id);
-                    }}
-                  >
-                    <div className="media-slot-thumb">
-                      {slot.hasSource ? (
-                        slot.kind === "video" ? (
-                          <video src={slot.source} muted playsInline autoPlay loop />
-                        ) : (
-                          <img src={slot.source} alt="" />
-                        )
-                      ) : (
-                        <span>Solte aqui</span>
-                      )}
-                    </div>
-                    <div className="media-slot-meta">
-                      <strong>{layer.name}</strong>
-                      <span>{slot.hasSource ? `${slot.kind === "video" ? "vídeo" : "imagem"}` : "vazio"}</span>
-                    </div>
-                  </button>
-                );
-              })}
-            </div>
-          ) : null}
-
-          <StageCanvas ref={stageRef} variant={activeVariant} content={activeContent} className="studio-canvas" live />
+          <StageCanvas ref={stageRef} variant={activeVariant} content={activeContent} className="studio-canvas journalist-preview-canvas" live />
           <div className="canvas-overlay journalist-preview-overlay" style={{ aspectRatio: `${activeVariant.width} / ${activeVariant.height}` }}>
             {[...activeVariant.layers]
               .sort((a, b) => a.zIndex - b.zIndex)
@@ -687,10 +644,6 @@ export function JournalistPanel({
                   </div>
                 );
               })}
-          </div>
-          <div className={`canvas-drop-hint ${isDraggingMedia ? "visible" : ""}`}>
-            <strong>{dropTargetLayer ? `Arraste a mídia para ${dropTargetLayer.name}` : "Sem slot de mídia"}</strong>
-            <span>ou solte um arquivo aqui para preencher o fundo do post</span>
           </div>
         </div>
 

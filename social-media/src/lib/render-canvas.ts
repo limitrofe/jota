@@ -133,17 +133,24 @@ function fitTextBox(
   return { fontSize: fallbackSize, lines, lineHeight: fallbackSize * lineHeight };
 }
 
-function placementToY(boundsY: number, boundsHeight: number, placement: string, fallbackY: number) {
-  if (placement === "top") {
-    return boundsY + boundsHeight * 0.08;
-  }
-  if (placement === "middle") {
-    return boundsY + boundsHeight * 0.38;
-  }
-  if (placement === "bottom") {
-    return boundsY + boundsHeight * 0.68;
-  }
-  return fallbackY;
+function resolveTextPlacement(
+  boundsX: number,
+  boundsY: number,
+  boundsWidth: number,
+  boundsHeight: number,
+  placement: string,
+  blockHeight: number,
+) {
+  const boxWidth = boundsWidth * 0.6;
+  const isRight = placement.includes("right");
+  const isBottom = placement.includes("bottom");
+
+  return {
+    boxX: isRight ? boundsX + boundsWidth - boxWidth : boundsX,
+    boxY: isBottom ? boundsY + Math.max(0, boundsHeight - blockHeight) : boundsY,
+    boxWidth,
+    align: isRight ? ("right" as const) : ("left" as const),
+  };
 }
 
 function parseFill(fill: string) {
@@ -242,6 +249,8 @@ async function drawAsset(
   targetY: number,
   targetWidth: number,
   targetHeight: number,
+  position: TemplateLayer["mediaPosition"] = "center",
+  scale = 1,
 ) {
   const sourceWidth = "videoWidth" in element ? element.videoWidth : element.naturalWidth;
   const sourceHeight = "videoHeight" in element ? element.videoHeight : element.naturalHeight;
@@ -249,7 +258,7 @@ async function drawAsset(
     return false;
   }
 
-  const fit = fitRect(sourceWidth, sourceHeight, targetWidth, targetHeight, layer.mediaFit);
+  const fit = fitRect(sourceWidth, sourceHeight, targetWidth, targetHeight, layer.mediaFit, position, scale);
   ctx.drawImage(element, targetX + fit.x, targetY + fit.y, fit.width, fit.height);
   return true;
 }
@@ -313,6 +322,8 @@ async function renderLayer(
       const key = getLayerContentKey(layer);
       const source = content.media[key];
       const resolvedSource = source?.src ?? layer.asset?.dataUrl;
+      const mediaPosition = source?.position ?? layer.mediaPosition ?? "center";
+      const mediaScale = Math.max(1, source?.scale ?? layer.mediaScale ?? 1);
       if (!resolvedSource) {
         drawRoundedRect(ctx, bounds.x, bounds.y, bounds.width, bounds.height, layer.radius);
         ctx.fillStyle = "#F3F4F6";
@@ -360,7 +371,17 @@ async function renderLayer(
             return;
           }
 
-          const drawn = await drawAsset(ctx, element, layer, bounds.x, bounds.y, bounds.width, bounds.height);
+          const drawn = await drawAsset(
+            ctx,
+            element,
+            layer,
+            bounds.x,
+            bounds.y,
+            bounds.width,
+            bounds.height,
+            mediaPosition,
+            mediaScale,
+          );
           if (!drawn) {
             drawFill(ctx, "#F3F4F6", bounds.x, bounds.y, bounds.width, bounds.height);
           }
@@ -374,12 +395,11 @@ async function renderLayer(
       const key = getLayerContentKey(layer);
       const text = content.texts[key]?.trim() || layer.textPlaceholder;
       const style = content.textStyles[key] ?? defaultTextStyle(layer);
-      const paddingX = Math.max(16, bounds.width * 0.08);
-      const paddingY = Math.max(12, bounds.height * 0.1);
-      const usableWidth = bounds.width * 0.85;
-      const innerWidth = Math.min(bounds.width - paddingX * 2, usableWidth);
-      const innerHeight = bounds.height - paddingY * 2;
-      const positionY = placementToY(bounds.y, bounds.height, style.placement, bounds.y + paddingY);
+      const boxWidth = bounds.width * 0.6;
+      const horizontalPadding = Math.max(18, boxWidth * 0.08);
+      const verticalPadding = Math.max(12, bounds.height * 0.08);
+      const innerWidth = boxWidth - horizontalPadding * 2;
+      const innerHeight = bounds.height - verticalPadding * 2;
 
       const fitted = fitTextBox(
         ctx,
@@ -393,42 +413,47 @@ async function renderLayer(
         layer.lineHeight,
       );
 
-      const maxLineWidth = fitted.lines.reduce((currentMax, line) => Math.max(currentMax, ctx.measureText(line).width), 0);
-      const boxWidth = Math.min(innerWidth, Math.max(maxLineWidth + paddingX * 2, innerWidth * 0.7));
-      const blockHeight = fitted.lines.length * fitted.lineHeight + paddingY * 2;
-      const boxX = layer.align === "center"
-        ? bounds.x + (bounds.width - boxWidth) / 2
-        : layer.align === "right"
-          ? bounds.x + bounds.width - boxWidth - paddingX
-          : bounds.x + paddingX;
-      const boxY = Math.max(bounds.y + paddingY, positionY);
-      const textX = layer.align === "center"
-        ? boxX + boxWidth / 2
-        : layer.align === "right"
-          ? boxX + boxWidth - paddingX
-          : boxX + paddingX;
-
-      if (style.backgroundEnabled) {
-        ctx.save();
-        ctx.globalAlpha *= style.backgroundOpacity;
-        ctx.fillStyle = style.backgroundColor;
-        drawRoundedRect(ctx, boxX, boxY, boxWidth, blockHeight, style.backgroundRadius);
-        ctx.fill();
-        ctx.restore();
-      }
-
-      ctx.fillStyle = style.color || layer.color;
-      ctx.textAlign = layer.align;
-      ctx.textBaseline = "top";
-
       const lines = fitted.lines;
       const lineHeight = fitted.lineHeight;
-
       const totalHeight = lines.length * lineHeight;
-      const textY = Math.max(boxY + paddingY, boxY + (blockHeight - totalHeight) / 2);
+      const blockHeight = totalHeight + verticalPadding * 2;
+      const placement = resolveTextPlacement(bounds.x, bounds.y, bounds.width, bounds.height, style.placement, blockHeight);
+      const textY = placement.boxY + verticalPadding;
+      const leftTextX = placement.boxX + horizontalPadding;
+      const rightTextX = placement.boxX + placement.boxWidth - horizontalPadding;
+
+      ctx.fillStyle = style.color || layer.color;
+      ctx.textAlign = placement.align;
+      ctx.textBaseline = "top";
 
       for (let index = 0; index < lines.length; index += 1) {
-        ctx.fillText(lines[index]!, textX, textY + lineHeight * index);
+        const line = lines[index]!;
+        const lineWidth = ctx.measureText(line).width;
+        const anchorX = placement.align === "right" ? rightTextX : leftTextX;
+        const backgroundPaddingX = Math.max(10, horizontalPadding * 0.45);
+        const backgroundPaddingY = Math.max(6, lineHeight * 0.18);
+
+        if (style.backgroundEnabled) {
+          ctx.save();
+          ctx.globalAlpha *= style.backgroundOpacity;
+          ctx.fillStyle = style.backgroundColor;
+          const lineX = placement.align === "right"
+            ? anchorX - lineWidth - backgroundPaddingX
+            : anchorX - backgroundPaddingX;
+          const lineY = textY + index * lineHeight - backgroundPaddingY;
+          drawRoundedRect(
+            ctx,
+            lineX,
+            lineY,
+            lineWidth + backgroundPaddingX * 2,
+            lineHeight + backgroundPaddingY * 2,
+            style.backgroundRadius,
+          );
+          ctx.fill();
+          ctx.restore();
+        }
+
+        ctx.fillText(line, anchorX, textY + lineHeight * index);
       }
     }
   } finally {

@@ -34,8 +34,9 @@ export const STANDARD_ASPECT_RATIOS: AspectRatioKey[] = ["1:1", "4:5", "16:9", "
 export type LayerKind = "background" | "image" | "video" | "text" | "shape";
 export type TransitionKind = "none" | "fade" | "slide-up" | "slide-left";
 export type MediaFit = "cover" | "contain";
+export type MediaPosition = "top" | "bottom" | "left" | "right" | "center";
 export type TextAlign = "left" | "center" | "right";
-export type TextPlacement = "template" | "top" | "middle" | "bottom";
+export type TextPlacement = "top-left" | "bottom-left" | "top-right" | "bottom-right";
 
 export interface LayerAsset {
   name: string;
@@ -62,6 +63,8 @@ export interface TemplateLayer {
   editable: boolean;
   locked: boolean;
   mediaFit: MediaFit;
+  mediaPosition: MediaPosition;
+  mediaScale: number;
   textPlaceholder: string;
   fontFamily: string;
   fontSize: number;
@@ -98,6 +101,8 @@ export interface MediaInput {
   kind: "image" | "video";
   src: string;
   name: string;
+  position?: MediaPosition;
+  scale?: number;
 }
 
 export interface ContentBundle {
@@ -148,7 +153,7 @@ export function createLayer(kind: LayerKind, index: number): TemplateLayer {
     lineHeight: 1.08,
     color: "#111111",
     align: "left" as TextAlign,
-    maxLines: 3,
+    maxLines: 4,
   };
 
   const presets: Record<LayerKind, Partial<TemplateLayer>> = {
@@ -173,6 +178,8 @@ export function createLayer(kind: LayerKind, index: number): TemplateLayer {
       locked: true,
       radius: 0,
       mediaFit: "cover",
+      mediaPosition: "center",
+      mediaScale: 1,
     },
     video: {
       name: "Mídia de fundo",
@@ -184,6 +191,8 @@ export function createLayer(kind: LayerKind, index: number): TemplateLayer {
       locked: true,
       radius: 0,
       mediaFit: "cover",
+      mediaPosition: "center",
+      mediaScale: 1,
     },
     text: {
       name: "Título",
@@ -193,7 +202,7 @@ export function createLayer(kind: LayerKind, index: number): TemplateLayer {
       width: 84,
       height: 24,
       fontSize: 72,
-      maxLines: 3,
+      maxLines: 4,
       align: "left",
       color: "#111111",
     },
@@ -343,6 +352,8 @@ export function normalizeLayerLayout(layer: TemplateLayer): TemplateLayer {
       locked: true,
       editable: false,
       mediaFit: "cover",
+      mediaPosition: layer.mediaPosition ?? "center",
+      mediaScale: Math.max(1, layer.mediaScale ?? 1),
       name: layer.name === "Slot de imagem" || layer.name === "Slot de vídeo" ? "Mídia de fundo" : layer.name,
     };
   }
@@ -368,7 +379,7 @@ export function normalizeLayerLayout(layer: TemplateLayer): TemplateLayer {
       y: Math.min(layer.y, 24),
       width: Math.max(layer.width, 84),
       height: Math.max(layer.height, 24),
-      maxLines: Math.max(layer.maxLines, 3),
+      maxLines: Math.max(layer.maxLines, 4),
       fontSize: Math.max(48, Math.min(layer.fontSize, 84)),
       fontFamily: layer.fontFamily || "Roboto, sans-serif",
     };
@@ -424,7 +435,7 @@ export function defaultTextStyle(layer: TemplateLayer): TextStyleOverride {
     backgroundColor: "#111111",
     backgroundOpacity: isTitle ? 0.72 : 0.58,
     backgroundRadius: isTitle ? 24 : 18,
-    placement: isTitle ? "top" : "template",
+    placement: isTitle ? "top-left" : "bottom-left",
   };
 }
 
@@ -518,34 +529,49 @@ export function fitRect(
   targetWidth: number,
   targetHeight: number,
   mode: MediaFit,
+  position: MediaPosition = "center",
+  scale: number = 1,
 ) {
-  const sourceRatio = sourceWidth / sourceHeight;
   const targetRatio = targetWidth / targetHeight;
-
+  const sourceRatio = sourceWidth / sourceHeight;
+  const scaleFactor = Math.max(1, scale);
   let width = targetWidth;
   let height = targetHeight;
-  let x = 0;
-  let y = 0;
 
   if (mode === "contain") {
     if (sourceRatio > targetRatio) {
       width = targetWidth;
       height = targetWidth / sourceRatio;
-      y = (targetHeight - height) / 2;
     } else {
       height = targetHeight;
       width = targetHeight * sourceRatio;
-      x = (targetWidth - width) / 2;
     }
-  } else if (sourceRatio > targetRatio) {
-    height = targetHeight;
-    width = targetHeight * sourceRatio;
-    x = (targetWidth - width) / 2;
   } else {
-    width = targetWidth;
-    height = targetWidth / sourceRatio;
-    y = (targetHeight - height) / 2;
+    // cover
+    if (sourceRatio > targetRatio) {
+      height = targetHeight;
+      width = targetHeight * sourceRatio;
+    } else {
+      width = targetWidth;
+      height = targetWidth / sourceRatio;
+    }
   }
+
+  width *= scaleFactor;
+  height *= scaleFactor;
+
+  let x = (targetWidth - width) / 2;
+  let y = (targetHeight - height) / 2;
+
+  if (position === "top") {
+    y = 0;
+  } else if (position === "bottom") {
+    y = targetHeight - height;
+  } else if (position === "left") {
+    x = 0;
+  } else if (position === "right") {
+    x = targetWidth - width;
+  } // center already set
 
   return { x, y, width, height };
 }

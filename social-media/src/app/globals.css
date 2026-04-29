@@ -390,6 +390,72 @@ button {
   gap: 10px;
 }
 
+.journalist-theme-screen {
+  min-height: calc(100vh - 48px);
+  padding: 36px;
+  display: grid;
+  gap: 24px;
+  align-content: start;
+}
+
+.journalist-theme-hero {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 20px;
+  padding: 28px;
+  border-radius: 32px;
+  background:
+    radial-gradient(circle at top right, rgba(240, 88, 65, 0.12), transparent 34%),
+    linear-gradient(180deg, #fff 0%, #fbfbfb 100%);
+  border: 1px solid var(--border);
+  box-shadow: var(--shadow-sm);
+}
+
+.journalist-theme-hero h2 {
+  margin: 0;
+  font-size: clamp(2rem, 4vw, 4rem);
+  line-height: 0.95;
+  letter-spacing: -0.06em;
+  max-width: 12ch;
+}
+
+.theme-hero-copy {
+  display: grid;
+  gap: 12px;
+  max-width: 460px;
+  justify-items: end;
+  text-align: right;
+}
+
+.theme-grid-large {
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  gap: 14px;
+}
+
+.theme-card-large {
+  min-height: 190px;
+  padding: 22px;
+  border-radius: 28px;
+  background:
+    radial-gradient(circle at top right, rgba(240, 88, 65, 0.08), transparent 34%),
+    linear-gradient(180deg, #fff 0%, #fcfcfc 100%);
+}
+
+.theme-card-large strong {
+  font-size: 1.45rem;
+}
+
+.theme-card-large p {
+  font-size: 0.95rem;
+  max-width: 28ch;
+}
+
+.theme-card-large .theme-card-meta {
+  margin-top: auto;
+  align-items: end;
+}
+
 .rail-divider {
   height: 1px;
   background: var(--border);

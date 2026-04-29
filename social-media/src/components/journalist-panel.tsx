@@ -24,8 +24,8 @@ import { revokeIfObjectUrl } from "@/lib/storage";
 interface JournalistPanelProps {
   templates: TemplateSpec[];
   allTemplates: TemplateSpec[];
-  selectedThemeId: TemplateCategoryId;
-  setSelectedThemeId: (value: TemplateCategoryId) => void;
+  selectedThemeId: TemplateCategoryId | null;
+  setSelectedThemeId: (value: TemplateCategoryId | null) => void;
   selectedTemplateId: string;
   setSelectedTemplateId: (value: string) => void;
   selectedVariantId: string;
@@ -58,9 +58,16 @@ export function JournalistPanel({
     initialVariant ? createEmptyContent(initialVariant) : { texts: {}, media: {}, textStyles: {}, variants: {} },
   );
 
-  const selectedTheme = TEMPLATE_CATEGORIES.find((theme) => theme.id === selectedThemeId) ?? TEMPLATE_CATEGORIES[0];
+  const selectedTheme = selectedThemeId ? TEMPLATE_CATEGORIES.find((theme) => theme.id === selectedThemeId) ?? null : null;
+  const themeTemplates = useMemo(
+    () => (selectedThemeId ? templates.filter((template) => template.categoryId === selectedThemeId) : []),
+    [selectedThemeId, templates],
+  );
   const selectedTemplate =
-    templates.find((template) => template.id === selectedTemplateId) ?? allTemplates.find((template) => template.id === selectedTemplateId) ?? templates[0];
+    themeTemplates.find((template) => template.id === selectedTemplateId) ??
+    allTemplates.find((template) => template.id === selectedTemplateId) ??
+    themeTemplates[0] ??
+    allTemplates[0];
   const activeVariant = selectedTemplate?.variants.find((variant) => variant.id === selectedVariantId) ?? selectedTemplate?.variants[0];
 
   useEffect(() => {
@@ -88,6 +95,10 @@ export function JournalistPanel({
   }, [selectedTemplate?.id, selectedVariantId]);
 
   useEffect(() => {
+    if (selectedThemeId == null) {
+      return;
+    }
+
     const currentThemeTemplates = allTemplates.filter((template) => template.categoryId === selectedThemeId);
     const preferred = currentThemeTemplates[0] ?? allTemplates[0];
     if (!preferred) return;
@@ -198,6 +209,22 @@ export function JournalistPanel({
     setSelectedThemeId(template.categoryId);
     setSelectedTemplateId(template.id);
     setSelectedVariantId(template.variants[0]?.id ?? "");
+    setEditScope("all");
+  }
+
+  function openTheme(themeId: TemplateCategoryId) {
+    const filtered = templates.filter((template) => template.categoryId === themeId);
+    const preferred = filtered[0] ?? allTemplates.find((template) => template.categoryId === themeId) ?? allTemplates[0];
+    if (!preferred) return;
+
+    setSelectedThemeId(themeId);
+    setSelectedTemplateId(preferred.id);
+    setSelectedVariantId(preferred.variants[0]?.id ?? "");
+    setEditScope("all");
+  }
+
+  function backToThemes() {
+    setSelectedThemeId(null);
     setEditScope("all");
   }
 
@@ -387,7 +414,7 @@ export function JournalistPanel({
     }
 
     files[`${folderName}/manifest.txt`] = strToU8(
-      `Template: ${selectedTemplate.name}\nCategoria: ${selectedTheme.label}\nFormatos: ${selectedTemplate.variants.length}`,
+      `Template: ${selectedTemplate.name}\nCategoria: ${selectedTheme?.label ?? "Tema"}\nFormatos: ${selectedTemplate.variants.length}`,
     );
 
     const zipData = zipSync(files, { level: 6 });
@@ -401,6 +428,45 @@ export function JournalistPanel({
   }
 
   const editingBundle = getEditingBundle();
+  if (selectedThemeId == null) {
+    return (
+      <section className="journalist-theme-screen">
+        <div className="journalist-theme-hero">
+          <div>
+            <p className="eyebrow">Jornalista</p>
+            <h2>Escolha um tema para montar o post</h2>
+          </div>
+          <div className="theme-hero-copy">
+            <p className="subtle-note">
+              Primeiro selecione um tema. Depois você entra na montagem só daquele conjunto de templates, sem ruído na lateral.
+            </p>
+            <span className="role-pill">Seleção inicial</span>
+          </div>
+        </div>
+
+        <div className="theme-grid theme-grid-large">
+          {TEMPLATE_CATEGORIES.map((theme) => (
+            <button
+              key={theme.id}
+              type="button"
+              className="theme-card theme-card-large"
+              onClick={() => openTheme(theme.id)}
+            >
+              <span>{theme.id === selectedThemeId ? "Tema ativo" : "Tema"}</span>
+              <strong>{theme.label}</strong>
+              <p>{theme.tagline}</p>
+              <div className="theme-card-meta">
+                <strong>{themeCount(allTemplates, theme.id)}</strong>
+                <span>templates</span>
+              </div>
+            </button>
+          ))}
+        </div>
+      </section>
+    );
+  }
+
+  const displayedTemplates = themeTemplates.length ? themeTemplates : allTemplates.filter((template) => template.categoryId === selectedThemeId);
 
   return (
     <section className="studio-grid journalist-grid">
@@ -408,51 +474,33 @@ export function JournalistPanel({
         <div className="rail-head">
           <div>
             <p className="eyebrow">Jornalista</p>
-            <h2>Escolha um tema</h2>
+            <h2>{selectedTheme?.label ?? "Tema"}</h2>
           </div>
-          <span className="status-pill">{status}</span>
+          <div className="topbar-actions">
+            <span className="role-pill">{displayedTemplates.length} templates</span>
+            <button className="ghost-button" onClick={backToThemes}>
+              Trocar tema
+            </button>
+          </div>
         </div>
 
-        <div className="stack compact">
-          <div className="theme-grid">
-            {TEMPLATE_CATEGORIES.map((theme) => (
-              <button
-                key={theme.id}
-                type="button"
-                className={`theme-card ${selectedThemeId === theme.id ? "active" : ""}`}
-                onClick={() => setSelectedThemeId(theme.id)}
-              >
-                <span>{theme.id === selectedThemeId ? "Tema ativo" : "Tema"}</span>
-                <strong>{theme.label}</strong>
-                <p>{theme.tagline}</p>
-                <div className="theme-card-meta">
-                  <strong>{themeCount(allTemplates, theme.id)}</strong>
-                  <span>templates</span>
-                </div>
-              </button>
-            ))}
-          </div>
-
-          <div className="rail-divider" />
-
-          <div className="stack">
-            {templates.map((template) => (
-              <button
-                key={template.id}
-                type="button"
-                className={`template-card ${template.id === selectedTemplate.id ? "active" : ""}`}
-                onClick={() => setTemplate(template.id)}
-              >
-                <span>{selectedTheme.label}</span>
-                <strong>{template.name}</strong>
-                <p>{template.description}</p>
-                <div className="template-card-meta">
-                  <span>{template.variants.length} formatos</span>
-                  <span>Editar agora</span>
-                </div>
-              </button>
-            ))}
-          </div>
+        <div className="stack">
+          {displayedTemplates.map((template) => (
+            <button
+              key={template.id}
+              type="button"
+              className={`template-card ${template.id === selectedTemplate.id ? "active" : ""}`}
+              onClick={() => setTemplate(template.id)}
+            >
+              <span>{selectedTheme?.label ?? "Tema"}</span>
+              <strong>{template.name}</strong>
+              <p>{template.description}</p>
+              <div className="template-card-meta">
+                <span>{template.variants.length} formatos</span>
+                <span>Editar agora</span>
+              </div>
+            </button>
+          ))}
         </div>
       </aside>
 
@@ -462,7 +510,7 @@ export function JournalistPanel({
             <p className="eyebrow">Montagem</p>
             <h2>{selectedTemplate.name}</h2>
             <p className="canvas-subtitle">
-              {selectedTheme.label} · {activeVariant.aspectRatio}
+              {selectedTheme?.label ?? "Tema"} · {displayedTemplates.length} templates · {activeVariant.aspectRatio}
             </p>
           </div>
 
@@ -483,6 +531,7 @@ export function JournalistPanel({
                 Formato ativo
               </button>
             </div>
+            <span className="status-pill">{status}</span>
             <button className="accent-button" onClick={() => void exportImage()}>
               Exportar JPG
             </button>

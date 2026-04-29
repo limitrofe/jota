@@ -1,10 +1,9 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useState } from "react";
 import { DesignerPanel } from "@/components/designer-panel";
 import { JournalistPanel } from "@/components/journalist-panel";
 import {
-  TEMPLATE_CATEGORIES,
   createStarterTemplates,
   ensureStandardVariants,
   normalizeTemplateLayout,
@@ -38,7 +37,7 @@ export default function HomePage() {
   const [templates, setTemplates] = useState<TemplateSpec[]>(() => initialTemplates());
   const [selectedTemplateId, setSelectedTemplateId] = useState(templates[0]?.id ?? "");
   const [selectedVariantId, setSelectedVariantId] = useState(templates[0]?.variants[0]?.id ?? "");
-  const [selectedThemeId, setSelectedThemeId] = useState<TemplateCategoryId>("dia_a_dia");
+  const [selectedThemeId, setSelectedThemeId] = useState<TemplateCategoryId | null>(null);
 
   useEffect(() => {
     const savedRole = readJson<Role | null>(ROLE_KEY, null);
@@ -53,8 +52,6 @@ export default function HomePage() {
       setTemplates(hydrated);
       setSelectedTemplateId(hydrated[0]!.id);
       setSelectedVariantId(hydrated[0]!.variants[0]!.id);
-      const categoryId = hydrated[0]!.categoryId ?? "dia_a_dia";
-      setSelectedThemeId(categoryId);
       return;
     }
 
@@ -87,26 +84,17 @@ export default function HomePage() {
     }
   }, [role, selectedTemplateId, selectedThemeId, selectedVariantId, templates]);
 
-  const selectedTemplate = templates.find((template) => template.id === selectedTemplateId) ?? templates[0];
-  const selectedVariant = selectedTemplate?.variants.find((variant) => variant.id === selectedVariantId) ?? selectedTemplate?.variants[0];
-
-  const selectedTheme = TEMPLATE_CATEGORIES.find((theme) => theme.id === selectedThemeId) ?? TEMPLATE_CATEGORIES[0];
-  const visibleTemplates = useMemo(() => {
-    if (role !== "journalist") {
-      return templates;
-    }
-
-    const filtered = templates.filter((template) => template.categoryId === selectedTheme.id);
-    return filtered.length > 0 ? filtered : templates;
-  }, [role, selectedTheme.id, templates]);
-
   function chooseRole(nextRole: Role) {
     setRole(nextRole);
+    if (nextRole === "journalist") {
+      setSelectedThemeId(null);
+    }
     writeJson(ROLE_KEY, nextRole);
   }
 
   function clearRole() {
     setRole(null);
+    setSelectedThemeId(null);
     if (typeof window !== "undefined") {
       window.localStorage.removeItem(ROLE_KEY);
     }
@@ -173,9 +161,9 @@ export default function HomePage() {
         />
       ) : (
         <JournalistPanel
-          templates={visibleTemplates}
+          templates={templates}
           allTemplates={templates}
-          selectedThemeId={selectedTheme.id}
+          selectedThemeId={selectedThemeId}
           setSelectedThemeId={setSelectedThemeId}
           selectedTemplateId={selectedTemplateId}
           setSelectedTemplateId={setSelectedTemplateId}

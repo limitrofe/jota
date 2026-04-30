@@ -1,0 +1,15 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 120 120" role="img" aria-label="Curadoria Tributos">
+  <defs>
+    <linearGradient id="coral" x1="22" x2="98" y1="20" y2="100" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#ff6552"/>
+      <stop offset="1" stop-color="#dc4434"/>
+    </linearGradient>
+  </defs>
+  <rect width="120" height="120" rx="5" fill="#303546"/>
+  <rect x="21" y="21" width="78" height="78" rx="2" fill="url(#coral)"/>
+  <circle cx="60" cy="60" r="33" fill="none" stroke="#ffd0c8" stroke-width="2"/>
+  <circle cx="60" cy="60" r="25" fill="none" stroke="#ffd0c8" stroke-width="2" opacity=".7"/>
+  <path d="M48 74 72 43" stroke="#fff4f1" stroke-width="7" stroke-linecap="round"/>
+  <circle cx="47" cy="48" r="7" fill="#ffd0c8"/>
+  <circle cx="73" cy="72" r="7" fill="#ffd0c8"/>
+</svg>

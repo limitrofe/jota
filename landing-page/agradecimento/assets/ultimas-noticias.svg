@@ -1,0 +1,12 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 120 120" role="img" aria-label="Últimas Notícias">
+  <defs>
+    <linearGradient id="coral" x1="16" x2="104" y1="14" y2="106" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#ff6552"/>
+      <stop offset="1" stop-color="#dc4434"/>
+    </linearGradient>
+  </defs>
+  <rect width="120" height="120" rx="5" fill="url(#coral)"/>
+  <rect x="20" y="20" width="80" height="80" rx="2" fill="none" stroke="#ffd0c8" stroke-width="2"/>
+  <path d="M42 39 58 60 42 81h13l16-21-16-21H42Z" fill="#fff4f1"/>
+  <path d="M65 39 81 60 65 81h13l16-21-16-21H65Z" fill="#ffd0c8"/>
+</svg>

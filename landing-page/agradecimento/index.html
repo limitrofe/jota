@@ -1,0 +1,1058 @@
+<!doctype html>
+<html lang="pt-BR">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Newsletters gratuitas do JOTA</title>
+    <meta
+      name="description"
+      content="Carrossel responsivo de newsletters gratuitas do JOTA."
+    />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700;900&display=swap"
+      rel="stylesheet"
+    />
+    <style>
+      :root {
+        --page-bg: #e6e8ed;
+        --surface: rgba(255, 255, 255, 0.48);
+        --surface-strong: rgba(255, 255, 255, 0.72);
+        --ink: #2f3546;
+        --ink-soft: #3f4557;
+        --muted: #6a7080;
+        --brand: #f4523f;
+        --brand-deep: #d94132;
+        --button: #030303;
+        --button-hover: #171717;
+        --ring: rgba(244, 82, 63, 0.28);
+        --shadow: 0 22px 58px rgba(45, 51, 68, 0.14);
+        --soft-shadow: 0 12px 32px rgba(45, 51, 68, 0.11);
+        --radius: 8px;
+      }
+
+      * {
+        box-sizing: border-box;
+      }
+
+      html {
+        scroll-behavior: smooth;
+      }
+
+      body {
+        min-height: 100vh;
+        margin: 0;
+        background: #f5f6f8;
+        color: var(--ink);
+        font-family: "Roboto", Arial, sans-serif;
+        overflow-x: hidden;
+      }
+
+      button,
+      a {
+        font: inherit;
+      }
+
+      .newsletter-section {
+        padding: 30px 16px 34px;
+        background: #e6e8ed;
+      }
+
+      .newsletter-shell {
+        width: 100%;
+        max-width: 1060px;
+        margin: 0 auto;
+      }
+
+      .section-header {
+        margin-bottom: 24px;
+      }
+
+      h1 {
+        width: 18rem;
+        max-width: 100%;
+        margin: 0;
+        color: #30313a;
+        font-size: clamp(1.08rem, 5.25vw, 1.26rem);
+        font-weight: 500;
+        line-height: 1.18;
+      }
+
+      .mobile-title-line,
+      .mobile-title-break {
+        display: block;
+      }
+
+      .mobile-title-line {
+        white-space: nowrap;
+      }
+
+      .section-title {
+        width: 18rem;
+        max-width: 100%;
+        margin: 0;
+        color: #30313a;
+        font-size: clamp(1.18rem, 5.55vw, 1.42rem);
+        font-weight: 500;
+        line-height: 1.12;
+      }
+
+      .section-header.compact {
+        margin-bottom: 32px;
+      }
+
+      .carousel {
+        position: relative;
+        width: 18rem;
+        max-width: 100%;
+      }
+
+      .carousel-viewport {
+        overflow: hidden;
+        width: 100%;
+        border: 0;
+        border-radius: 0;
+        background: transparent;
+        box-shadow: none;
+        outline: none;
+      }
+
+      .carousel-viewport:focus-visible {
+        box-shadow: var(--shadow), 0 0 0 4px var(--ring);
+      }
+
+      .carousel-track {
+        display: flex;
+        width: 100%;
+        transition: transform 760ms cubic-bezier(0.18, 0.88, 0.24, 1);
+        will-change: transform;
+      }
+
+      .newsletter-card {
+        display: flex;
+        min-width: 89%;
+        padding: 0 10px 0 0;
+        flex: 0 0 89%;
+      }
+
+      .newsletter-card-inner {
+        display: grid;
+        width: 100%;
+        min-height: 292px;
+        grid-template-rows: 82px auto;
+        align-content: start;
+        gap: 14px;
+        padding: 16px;
+        border: 1px solid rgba(255, 255, 255, 0.68);
+        border-radius: var(--radius);
+        background: rgba(255, 255, 255, 0.5);
+        box-shadow: var(--soft-shadow);
+        transform: translateY(0) scale(1);
+        transition:
+          transform 420ms ease,
+          opacity 420ms ease,
+          background-color 420ms ease,
+          box-shadow 420ms ease;
+      }
+
+      .newsletter-card[aria-hidden="true"] .newsletter-card-inner {
+        transform: translateY(8px) scale(0.98);
+        opacity: 0.72;
+      }
+
+      .newsletter-card-inner:hover {
+        background: var(--surface-strong);
+        box-shadow: 0 20px 45px rgba(45, 51, 68, 0.16);
+        transform: translateY(-4px);
+      }
+
+      .newsletter-visual {
+        width: 82px;
+        height: 82px;
+        border-radius: var(--radius);
+        object-fit: contain;
+        filter: drop-shadow(0 16px 24px rgba(35, 40, 55, 0.16));
+      }
+
+      .newsletter-content {
+        display: grid;
+        grid-template-rows: 2.85em 6.1em auto;
+        align-content: start;
+        gap: 10px;
+      }
+
+      .newsletter-content h2 {
+        max-width: 12ch;
+        margin: 0;
+        color: var(--ink);
+        font-size: clamp(0.94rem, 4.5vw, 1.08rem);
+        font-weight: 500;
+        line-height: 1.08;
+      }
+
+      .newsletter-content p {
+        max-width: 25ch;
+        margin: 0;
+        color: #292f3d;
+        font-size: 0.84rem;
+        line-height: 1.42;
+      }
+
+      .newsletter-button {
+        display: inline-flex;
+        width: fit-content;
+        min-height: 32px;
+        align-items: center;
+        justify-content: center;
+        padding: 0 13px;
+        border-radius: 4px;
+        background: var(--button);
+        color: #fff;
+        font-size: 0.72rem;
+        font-weight: 700;
+        text-decoration: none;
+        transition:
+          transform 220ms ease,
+          background-color 220ms ease,
+          box-shadow 220ms ease;
+      }
+
+      .newsletter-button:hover {
+        background: var(--button-hover);
+        box-shadow: 0 12px 22px rgba(0, 0, 0, 0.22);
+        transform: translateY(-2px);
+      }
+
+      .newsletter-button:focus-visible,
+      .icon-button:focus-visible,
+      .dot-button:focus-visible {
+        outline: 3px solid var(--ring);
+        outline-offset: 3px;
+      }
+
+      .carousel-controls {
+        display: none;
+        justify-content: flex-end;
+        gap: 10px;
+        margin-bottom: 14px;
+      }
+
+      .icon-button {
+        display: inline-grid;
+        width: 42px;
+        height: 42px;
+        place-items: center;
+        border: 0;
+        border-radius: 50%;
+        background: rgba(47, 53, 70, 0.96);
+        color: #fff;
+        cursor: pointer;
+        box-shadow: 0 12px 26px rgba(47, 53, 70, 0.18);
+        transition:
+          transform 220ms ease,
+          background-color 220ms ease,
+          opacity 220ms ease;
+      }
+
+      .icon-button:hover {
+        background: var(--brand);
+        transform: translateY(-2px);
+      }
+
+      .icon-button svg {
+        width: 22px;
+        height: 22px;
+        fill: none;
+        stroke: currentColor;
+        stroke-linecap: round;
+        stroke-linejoin: round;
+        stroke-width: 2.4;
+      }
+
+      .carousel-footer {
+        display: flex;
+        justify-content: center;
+        margin-top: 14px;
+      }
+
+      .carousel-dots {
+        display: inline-flex;
+        gap: 7px;
+        align-items: center;
+      }
+
+      .dot-button {
+        width: 7px;
+        height: 7px;
+        padding: 0;
+        border: 0;
+        border-radius: 999px;
+        background: rgba(47, 53, 70, 0.28);
+        cursor: pointer;
+        transition:
+          width 280ms ease,
+          background-color 280ms ease;
+      }
+
+      .dot-button[aria-current="true"] {
+        width: 24px;
+        background: var(--brand);
+      }
+
+      .whatsapp-section {
+        padding: 30px 16px 46px;
+        background: #f5f6f8;
+      }
+
+      .whatsapp-shell {
+        width: 100%;
+        max-width: 1060px;
+        margin: 0 auto;
+      }
+
+      .whatsapp-grid {
+        display: grid;
+        width: 18rem;
+        max-width: 100%;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 10px;
+      }
+
+      .whatsapp-card {
+        display: grid;
+        min-width: 0;
+        min-height: auto;
+        align-content: start;
+        gap: 9px;
+        padding: 10px;
+        border: 1px solid rgba(255, 255, 255, 0.66);
+        border-radius: var(--radius);
+        background: rgba(255, 255, 255, 0.48);
+        box-shadow: 0 10px 24px rgba(45, 51, 68, 0.08);
+        animation: cinematicRise 820ms cubic-bezier(0.18, 0.88, 0.24, 1) both;
+        transition:
+          transform 360ms ease,
+          background-color 360ms ease,
+          box-shadow 360ms ease;
+      }
+
+      .whatsapp-card:nth-child(2) {
+        animation-delay: 100ms;
+      }
+
+      .whatsapp-card:hover {
+        background: rgba(255, 255, 255, 0.72);
+        box-shadow: 0 20px 45px rgba(45, 51, 68, 0.15);
+        transform: translateY(-4px);
+      }
+
+      .whatsapp-visual {
+        width: 62px;
+        height: 62px;
+        object-fit: contain;
+      }
+
+      .whatsapp-card h3 {
+        max-width: 10.5ch;
+        margin: 0;
+        color: var(--ink);
+        font-size: 0.82rem;
+        font-weight: 500;
+        line-height: 1.12;
+      }
+
+      .whatsapp-card .newsletter-button {
+        min-height: 30px;
+        padding: 0 10px;
+        font-size: 0.68rem;
+      }
+
+      .site-footer {
+        margin-top: 42px;
+        color: #8e94a3;
+      }
+
+      .footer-logo {
+        display: inline-block;
+        margin-bottom: 14px;
+        color: transparent;
+        font-size: clamp(2rem, 11vw, 2.55rem);
+        font-weight: 300;
+        line-height: 1;
+        text-decoration: none;
+        -webkit-text-stroke: 1.4px var(--brand);
+        text-stroke: 1.4px var(--brand);
+      }
+
+      .site-footer p {
+        width: 18rem;
+        max-width: 520px;
+        margin: 0;
+        font-size: 0.76rem;
+        font-weight: 300;
+        line-height: 1.45;
+      }
+
+      .social-links {
+        display: flex;
+        gap: 8px;
+        margin-top: 18px;
+      }
+
+      .social-links span {
+        display: inline-grid;
+        width: 22px;
+        height: 22px;
+        place-items: center;
+        border-radius: 50%;
+        background: rgba(47, 53, 70, 0.08);
+        color: #303546;
+        transition:
+          transform 220ms ease,
+          background-color 220ms ease,
+          color 220ms ease;
+      }
+
+      .social-links span:hover {
+        background: var(--brand);
+        color: #fff;
+        transform: translateY(-2px);
+      }
+
+      .social-links svg {
+        width: 14px;
+        height: 14px;
+        fill: none;
+        stroke: currentColor;
+        stroke-linecap: round;
+        stroke-linejoin: round;
+        stroke-width: 2;
+      }
+
+      @keyframes cinematicRise {
+        from {
+          opacity: 0;
+          transform: translateY(28px) scale(0.98);
+        }
+
+        to {
+          opacity: 1;
+          transform: translateY(0) scale(1);
+        }
+      }
+
+      @media (min-width: 680px) {
+        .newsletter-section {
+          padding: 56px 28px;
+        }
+
+        .carousel {
+          width: 100%;
+        }
+
+        h1,
+        .section-title {
+          width: auto;
+          max-width: 760px;
+          font-size: clamp(1.75rem, 2vw + 1rem, 2.25rem);
+        }
+
+        .mobile-title-break {
+          display: inline;
+        }
+
+        .mobile-title-line {
+          display: inline;
+          white-space: normal;
+        }
+
+        .section-header {
+          margin-bottom: 30px;
+        }
+
+        .newsletter-card {
+          min-width: 50%;
+          flex-basis: 50%;
+          padding: 20px;
+        }
+
+        .newsletter-card-inner {
+          min-height: 444px;
+          grid-template-rows: 112px auto;
+          padding: 22px;
+        }
+
+        .newsletter-visual {
+          width: 112px;
+          height: 112px;
+        }
+
+        .newsletter-content h2 {
+          font-size: clamp(1.24rem, 2.4vw, 1.38rem);
+        }
+
+        .newsletter-content {
+          grid-template-rows: 3.45em 8.9em auto;
+          gap: 13px;
+        }
+
+        .newsletter-content p {
+          font-size: 1rem;
+          line-height: 1.48;
+        }
+
+        .newsletter-button {
+          min-height: 40px;
+          padding: 0 20px;
+          font-size: 0.88rem;
+        }
+
+        .whatsapp-section {
+          padding: 44px 28px 72px;
+        }
+
+        .whatsapp-grid {
+          width: auto;
+          grid-template-columns: repeat(2, minmax(0, 220px));
+          gap: 42px;
+        }
+
+        .whatsapp-card {
+          min-height: 310px;
+          padding: 0;
+          border-color: transparent;
+          background: transparent;
+          box-shadow: none;
+        }
+
+        .whatsapp-card:hover {
+          background: transparent;
+          box-shadow: none;
+        }
+
+        .whatsapp-visual {
+          width: 126px;
+          height: 126px;
+        }
+
+        .whatsapp-card h3 {
+          font-size: clamp(1.24rem, 2.4vw, 1.38rem);
+        }
+
+        .whatsapp-card .newsletter-button {
+          min-height: 40px;
+          padding: 0 20px;
+          font-size: 0.88rem;
+        }
+
+        .site-footer {
+          margin-top: 76px;
+        }
+
+        .site-footer p {
+          width: auto;
+          font-size: 0.98rem;
+        }
+
+        .footer-logo {
+          font-size: clamp(2.6rem, 8vw, 3.5rem);
+        }
+
+        .social-links {
+          gap: 10px;
+          margin-top: 28px;
+        }
+
+        .social-links span {
+          width: 24px;
+          height: 24px;
+        }
+
+        .social-links svg {
+          width: 16px;
+          height: 16px;
+        }
+      }
+
+      @media (min-width: 980px) {
+        .newsletter-section {
+          padding: 72px 32px 58px;
+        }
+
+        h1 {
+          font-size: clamp(1.9rem, 1.7vw + 1rem, 2.35rem);
+        }
+
+        .section-title {
+          font-size: clamp(1.85rem, 1.55vw + 1rem, 2.25rem);
+        }
+
+        .newsletter-content h2,
+        .whatsapp-card h3 {
+          font-size: 1.34rem;
+          line-height: 1.08;
+        }
+
+        .newsletter-card {
+          min-width: 25%;
+          flex-basis: 25%;
+          padding: 24px 18px;
+        }
+
+        .carousel-controls {
+          position: absolute;
+          top: 50%;
+          left: -18px;
+          right: -18px;
+          z-index: 3;
+          display: flex;
+          justify-content: space-between;
+          margin: 0;
+          pointer-events: none;
+          transform: translateY(-50%);
+        }
+
+        .icon-button {
+          width: 34px;
+          height: 34px;
+          border: 1px solid rgba(47, 53, 70, 0.14);
+          background: rgba(255, 255, 255, 0.76);
+          color: rgba(47, 53, 70, 0.86);
+          box-shadow: 0 10px 22px rgba(45, 51, 68, 0.12);
+          pointer-events: auto;
+        }
+
+        .icon-button:hover {
+          background: rgba(47, 53, 70, 0.92);
+          color: #fff;
+          transform: translateY(0);
+        }
+
+        .icon-button svg {
+          width: 18px;
+          height: 18px;
+          stroke-width: 2.2;
+        }
+
+        .newsletter-card-inner {
+          min-height: 430px;
+          grid-template-rows: 112px auto;
+          padding: 22px;
+          background: transparent;
+          border-color: transparent;
+          box-shadow: none;
+        }
+
+        .newsletter-card-inner:hover {
+          background: rgba(255, 255, 255, 0.54);
+        }
+
+        .carousel-viewport {
+          border: 1px solid rgba(255, 255, 255, 0.84);
+          border-radius: var(--radius);
+          background: rgba(255, 255, 255, 0.42);
+          box-shadow: 0 14px 32px rgba(45, 51, 68, 0.1);
+        }
+
+        .carousel-viewport:focus-visible {
+          box-shadow: var(--shadow), 0 0 0 4px var(--ring);
+        }
+
+        .carousel-viewport {
+          padding: 12px;
+          background:
+            linear-gradient(145deg, rgba(255, 255, 255, 0.68), rgba(255, 255, 255, 0.28)),
+            rgba(232, 235, 242, 0.44);
+          box-shadow: var(--shadow);
+        }
+
+        .whatsapp-section {
+          padding: 56px 32px 78px;
+        }
+
+        .whatsapp-shell {
+          max-width: 1060px;
+        }
+
+        .whatsapp-grid {
+          gap: 72px;
+        }
+
+        .site-footer {
+          margin-top: 82px;
+        }
+      }
+
+      @media (hover: none) {
+        .carousel-viewport {
+          touch-action: pan-y;
+        }
+      }
+
+      @media (prefers-reduced-motion: reduce) {
+        *,
+        *::before,
+        *::after {
+          scroll-behavior: auto !important;
+          transition-duration: 0.01ms !important;
+          animation-duration: 0.01ms !important;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <main class="newsletter-section" aria-labelledby="newsletter-title">
+      <div class="newsletter-shell">
+        <div class="section-header">
+          <h1 id="newsletter-title"><span class="mobile-title-line">Conheça as newsletters gratuitas</span> <span class="mobile-title-break">do JOTA</span></h1>
+        </div>
+
+        <section class="carousel" aria-label="Newsletters gratuitas">
+          <div class="carousel-controls" aria-label="Controles do carrossel">
+            <button class="icon-button" type="button" data-carousel-prev aria-label="Newsletter anterior">
+              <svg aria-hidden="true" viewBox="0 0 24 24">
+                <path d="m15 18-6-6 6-6" />
+              </svg>
+            </button>
+            <button class="icon-button" type="button" data-carousel-next aria-label="Próxima newsletter">
+              <svg aria-hidden="true" viewBox="0 0 24 24">
+                <path d="m9 18 6-6-6-6" />
+              </svg>
+            </button>
+          </div>
+
+          <div class="carousel-viewport" data-carousel-viewport tabindex="0">
+            <div class="carousel-track" data-carousel-track></div>
+          </div>
+
+          <div class="carousel-footer">
+            <div class="carousel-dots" data-carousel-dots aria-label="Paginação"></div>
+          </div>
+        </section>
+      </div>
+    </main>
+
+    <section class="whatsapp-section" aria-labelledby="whatsapp-title">
+      <div class="whatsapp-shell">
+        <div class="section-header compact">
+          <h2 id="whatsapp-title" class="section-title">Canais do Whatsapp</h2>
+        </div>
+
+        <div class="whatsapp-grid" data-whatsapp-grid></div>
+
+        <footer class="site-footer">
+          <a class="footer-logo" href="https://www.jota.info/" aria-label="JOTA">
+            <img src="https://email-editor-production.s3.amazonaws.com/images/43248/487f5134-9b52-5bba-dc39-9598f82b9e2e.png" alt="Logo do JOTA" width="120" height="auto" loading="lazy" />
+          </a>
+          <p>
+            Copyright © JOTA Jornalismo S/A <br />  Todos os Direitos Reservados<br />
+            CNPJ 21.050.733/0001-00
+          </p>
+
+          <div class="social-links" aria-label="Redes sociais do JOTA">
+            <span role="img" aria-label="Instagram">
+              <svg aria-hidden="true" viewBox="0 0 24 24">
+                <rect x="5" y="5" width="14" height="14" rx="4" />
+                <circle cx="12" cy="12" r="3.2" />
+                <path d="M16.6 7.4h.01" />
+              </svg>
+            </span>
+            <span role="img" aria-label="LinkedIn">
+              <svg aria-hidden="true" viewBox="0 0 24 24">
+                <path d="M7.5 10v7" />
+                <path d="M11 17v-7" />
+                <path d="M11 13.2c0-2 1.1-3.2 3-3.2s3 1.3 3 3.5V17" />
+                <path d="M7.5 7.2h.01" />
+              </svg>
+            </span>
+            <span role="img" aria-label="X">
+              <svg aria-hidden="true" viewBox="0 0 24 24">
+                <path d="m7 6 10 12" />
+                <path d="m17 6-10 12" />
+              </svg>
+            </span>
+            <span role="img" aria-label="YouTube">
+              <svg aria-hidden="true" viewBox="0 0 24 24">
+                <path d="M5.5 8.5c.2-1 1-1.7 2-1.8 1.6-.2 3.1-.2 4.5-.2s2.9 0 4.5.2c1 .1 1.8.8 2 1.8.2 1.1.3 2.3.3 3.5s-.1 2.4-.3 3.5c-.2 1-1 1.7-2 1.8-1.6.2-3.1.2-4.5.2s-2.9 0-4.5-.2c-1-.1-1.8-.8-2-1.8-.2-1.1-.3-2.3-.3-3.5s.1-2.4.3-3.5Z" />
+                <path d="m10.5 9.5 4 2.5-4 2.5v-5Z" />
+              </svg>
+            </span>
+          </div>
+        </footer>
+      </div>
+    </section>
+
+    <script>
+      const baseSignupUrl = "https://www.jota.info/newsletters";
+      const baseWhatsAppUrl = "https://www.jota.info/whatsapp";
+
+      const newsletters = [
+        {
+          title: "Curadoria Trabalhista",
+          description:
+            "Conteúdo exclusivo do direito trabalhista com os últimos acontecimentos dos Três Poderes",
+          image: "https://d335luupugsy2.cloudfront.net/cms/files/43248/1749039397/$uh7fey6w4v9",
+          params: "newsletter=curadoria-trabalhista&utm_source=agradecimento&utm_medium=carrossel&utm_campaign=newsletters",
+        },
+        {
+          title: "Curadoria Poder",
+          description:
+            "Receba os principais acontecimentos políticos da semana, com notícias e análises exclusivas",
+          image: "https://d335luupugsy2.cloudfront.net/cms/files/43248/1749039397/$e50nvke2qzs",
+          params: "newsletter=curadoria-poder&utm_source=agradecimento&utm_medium=carrossel&utm_campaign=newsletters",
+        },
+        {
+          title: "Curadoria Tributos",
+          description:
+            "As movimentações tributárias da semana nos Três Poderes, com conteúdos inéditos",
+          image: "https://d335luupugsy2.cloudfront.net/cms/files/43248/1749039397/$wv3egxbpg1s",
+          params: "newsletter=curadoria-tributos&utm_source=agradecimento&utm_medium=carrossel&utm_campaign=newsletters",
+        },
+        {
+          title: "Curadoria Saúde",
+          description:
+            "Os fatos mais relevantes da semana para o setor de saúde e novidades da Anvisa e ANS",
+          image: "https://d335luupugsy2.cloudfront.net/cms/files/43248/1749039397/$4y79w0tznwb",
+          params: "newsletter=curadoria-saude&utm_source=agradecimento&utm_medium=carrossel&utm_campaign=newsletters",
+        },
+        {
+          title: "JOTA Principal",
+          description:
+            "Curadoria de informações direto ao ponto sobre o que realmente importa",
+          image: "https://d335luupugsy2.cloudfront.net/cms/files/43248/1749039397/$8ozixwpqiz",
+          params: "newsletter=jota-principal&utm_source=agradecimento&utm_medium=carrossel&utm_campaign=newsletters",
+        },
+        {
+          title: "Últimas Notícias",
+          description:
+            "Receba diariamente as notícias do nosso site em seu e-mail ao final do dia",
+          image: "https://d335luupugsy2.cloudfront.net/cms/files/43248/1749039397/$b1kojfncp9b",
+          params: "newsletter=ultimas-noticias&utm_source=agradecimento&utm_medium=carrossel&utm_campaign=newsletters",
+        },
+        {
+          title: "Mais lidas da Semana",
+          description:
+            "As notícias mais lidas do nosso site diretamente em seu e-mail todo sábado",
+          image: "https://d335luupugsy2.cloudfront.net/cms/files/43248/1749039397/$8n2xnedvevj",
+          params: "newsletter=mais-lidas-da-semana&utm_source=agradecimento&utm_medium=carrossel&utm_campaign=newsletters",
+        },
+        {
+          title: "Por dentro da máquina",
+          description:
+            "Receba notícias exclusivas para servidores públicos dos Três Poderes",
+          image: "https://d335luupugsy2.cloudfront.net/cms/files/43248/1749039397/$mektw0t6zws",
+          params: "newsletter=por-dentro-da-maquina&utm_source=agradecimento&utm_medium=carrossel&utm_campaign=newsletters",
+        },
+      ];
+
+      const whatsappChannels = [
+        {
+          title: "Notícias jurídicas e políticas",
+          image: "https://d335luupugsy2.cloudfront.net/cms/files/43248/1730743238/$6dkf2nuov8i",
+          params: "canal=noticias-juridicas-politicas&utm_source=agradecimento&utm_medium=whatsapp&utm_campaign=canais",
+        },
+        {
+          title: "Últimas notícias em Tributos",
+          image: "https://d335luupugsy2.cloudfront.net/cms/files/43248/1730743238/$4pv3lt26uss",
+          params: "canal=ultimas-noticias-tributos&utm_source=agradecimento&utm_medium=whatsapp&utm_campaign=canais",
+        },
+      ];
+
+      const track = document.querySelector("[data-carousel-track]");
+      const viewport = document.querySelector("[data-carousel-viewport]");
+      const dots = document.querySelector("[data-carousel-dots]");
+      const previousButton = document.querySelector("[data-carousel-prev]");
+      const nextButton = document.querySelector("[data-carousel-next]");
+      const whatsappGrid = document.querySelector("[data-whatsapp-grid]");
+      const reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)");
+
+      let currentIndex = 0;
+      let visibleCards = getVisibleCards();
+      let autoplayTimer;
+      let dragStartX = 0;
+
+      function createSignupUrl(params) {
+        return `${baseSignupUrl}?${params}`;
+      }
+
+      function createWhatsAppUrl(params) {
+        return `${baseWhatsAppUrl}?${params}`;
+      }
+
+      function renderNewsletters() {
+        track.innerHTML = newsletters
+          .map(
+            (item, index) => `
+              <article class="newsletter-card" data-card-index="${index}">
+                <div class="newsletter-card-inner">
+                  <img class="newsletter-visual" src="${item.image}" alt="" loading="lazy" />
+                  <div class="newsletter-content">
+                    <h2>${item.title}</h2>
+                    <p>${item.description}</p>
+                    <a class="newsletter-button" href="${createSignupUrl(item.params)}">Inscreva-se</a>
+                  </div>
+                </div>
+              </article>
+            `
+          )
+          .join("");
+      }
+
+      function renderWhatsAppChannels() {
+        whatsappGrid.innerHTML = whatsappChannels
+          .map(
+            (item) => `
+              <article class="whatsapp-card">
+                <img class="whatsapp-visual" src="${item.image}" alt="" loading="lazy" />
+                <h3>${item.title}</h3>
+                <a class="newsletter-button" href="${createWhatsAppUrl(item.params)}">Inscreva-se</a>
+              </article>
+            `
+          )
+          .join("");
+      }
+
+      function renderDots() {
+        const pages = getMaxIndex() + 1;
+        dots.innerHTML = Array.from(
+          { length: pages },
+          (_, index) => `
+            <button
+              class="dot-button"
+              type="button"
+              data-dot-index="${index}"
+              aria-label="Ir para página ${index + 1}"
+            ></button>
+          `
+        ).join("");
+      }
+
+      function getVisibleCards() {
+        if (window.matchMedia("(min-width: 980px)").matches) return 4;
+        if (window.matchMedia("(min-width: 680px)").matches) return 2;
+        return 1;
+      }
+
+      function getMaxIndex() {
+        return Math.max(newsletters.length - visibleCards, 0);
+      }
+
+      function updateCarousel(nextIndex = currentIndex) {
+        currentIndex = Math.min(Math.max(nextIndex, 0), getMaxIndex());
+        const cards = document.querySelectorAll(".newsletter-card");
+        const currentCard = cards[currentIndex];
+
+        if (currentCard) {
+          track.style.transform = `translate3d(-${currentCard.offsetLeft}px, 0, 0)`;
+        }
+
+        cards.forEach((card, index) => {
+          const isVisible = index >= currentIndex && index < currentIndex + visibleCards;
+          const link = card.querySelector(".newsletter-button");
+
+          card.setAttribute("aria-hidden", String(!isVisible));
+          link.tabIndex = isVisible ? 0 : -1;
+        });
+
+        document.querySelectorAll("[data-dot-index]").forEach((dot, index) => {
+          dot.setAttribute("aria-current", String(index === currentIndex));
+        });
+      }
+
+      function goToNext() {
+        const nextIndex = currentIndex >= getMaxIndex() ? 0 : currentIndex + 1;
+        updateCarousel(nextIndex);
+      }
+
+      function goToPrevious() {
+        const previousIndex = currentIndex <= 0 ? getMaxIndex() : currentIndex - 1;
+        updateCarousel(previousIndex);
+      }
+
+      function startAutoplay() {
+        if (reduceMotion.matches) return;
+
+        stopAutoplay();
+        autoplayTimer = window.setInterval(goToNext, 5600);
+      }
+
+      function stopAutoplay() {
+        window.clearInterval(autoplayTimer);
+      }
+
+      renderNewsletters();
+      renderWhatsAppChannels();
+      renderDots();
+      updateCarousel();
+      startAutoplay();
+
+      nextButton.addEventListener("click", () => {
+        goToNext();
+        startAutoplay();
+      });
+
+      previousButton.addEventListener("click", () => {
+        goToPrevious();
+        startAutoplay();
+      });
+
+      dots.addEventListener("click", (event) => {
+        const dot = event.target.closest("[data-dot-index]");
+        if (!dot) return;
+        updateCarousel(Number(dot.dataset.dotIndex));
+        startAutoplay();
+      });
+
+      viewport.addEventListener("mouseenter", stopAutoplay);
+      viewport.addEventListener("mouseleave", startAutoplay);
+      viewport.addEventListener("focusin", stopAutoplay);
+      viewport.addEventListener("focusout", startAutoplay);
+
+      viewport.addEventListener("keydown", (event) => {
+        if (event.key === "ArrowRight") {
+          goToNext();
+        }
+
+        if (event.key === "ArrowLeft") {
+          goToPrevious();
+        }
+      });
+
+      viewport.addEventListener("pointerdown", (event) => {
+        dragStartX = event.clientX;
+      });
+
+      viewport.addEventListener("pointerup", (event) => {
+        const dragDistance = event.clientX - dragStartX;
+
+        if (Math.abs(dragDistance) < 48) return;
+
+        if (dragDistance < 0) {
+          goToNext();
+        } else {
+          goToPrevious();
+        }
+
+        startAutoplay();
+      });
+
+      window.addEventListener("resize", () => {
+        const nextVisibleCards = getVisibleCards();
+        if (nextVisibleCards === visibleCards) return;
+
+        visibleCards = nextVisibleCards;
+        renderDots();
+        updateCarousel(currentIndex);
+      });
+
+      reduceMotion.addEventListener("change", () => {
+        if (reduceMotion.matches) {
+          stopAutoplay();
+        } else {
+          startAutoplay();
+        }
+      });
+    </script>
+  </body>
+</html>

@@ -1,0 +1,11 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 120 120" role="img" aria-label="Mais lidas da Semana">
+  <defs>
+    <linearGradient id="coral" x1="16" x2="104" y1="14" y2="106" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#ff6552"/>
+      <stop offset="1" stop-color="#dc4434"/>
+    </linearGradient>
+  </defs>
+  <rect width="120" height="120" rx="5" fill="url(#coral)"/>
+  <rect x="20" y="20" width="80" height="80" rx="2" fill="none" stroke="#ffd0c8" stroke-width="2"/>
+  <path d="M60 38v44M38 60h44" stroke="#fff4f1" stroke-width="8" stroke-linecap="square"/>
+</svg>

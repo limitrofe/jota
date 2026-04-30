@@ -1,0 +1,16 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 120 120" role="img" aria-label="Curadoria Trabalhista">
+  <defs>
+    <linearGradient id="coral" x1="20" x2="96" y1="18" y2="102" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#ff6552"/>
+      <stop offset="1" stop-color="#dc4434"/>
+    </linearGradient>
+  </defs>
+  <rect width="120" height="120" rx="5" fill="#303546"/>
+  <rect x="21" y="21" width="78" height="78" rx="2" fill="url(#coral)"/>
+  <rect x="35" y="26" width="50" height="68" rx="1" fill="none" stroke="#ffd0c8" stroke-width="2"/>
+  <path d="M40 88h40" stroke="#ffd0c8" stroke-width="2" stroke-linecap="round"/>
+  <circle cx="60" cy="57" r="12" fill="none" stroke="#ffd0c8" stroke-width="3"/>
+  <circle cx="60" cy="57" r="5" fill="#fff4f1"/>
+  <path d="M60 34v9M60 71v9M37 57h9M74 57h9M43 40l7 7M70 67l7 7M77 40l-7 7M50 67l-7 7" stroke="#ffd0c8" stroke-width="3" stroke-linecap="round"/>
+  <path d="M34 67c5 8 12 13 22 15M86 67c-5 8-12 13-22 15" fill="none" stroke="#ffd0c8" stroke-width="3" stroke-linecap="round"/>
+</svg>
